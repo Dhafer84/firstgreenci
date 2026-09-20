@@ -38,7 +38,15 @@ Rien d'autre. L'exécutable ne dépend d'aucune bibliothèque système, et Go n'
 
 ### Installation
 
-Prenez le fichier qui correspond à votre machine sur la [page des versions](https://github.com/Dhafer84/firstgreenci/releases/latest) :
+**Sur macOS, avec Homebrew** — le plus court :
+
+```bash
+brew install Dhafer84/tap/firstgreenci
+```
+
+`act` est installé en même temps ; il ne vous restera que Docker. Lancez ensuite `firstgreenci doctor`, qui vérifie tout et explique ce qui manque.
+
+**Partout ailleurs, ou sans Homebrew** — prenez le fichier qui correspond à votre machine sur la [page des versions](https://github.com/Dhafer84/firstgreenci/releases/latest) :
 
 | Votre machine | Fichier à prendre |
 | --- | --- |
@@ -188,7 +196,15 @@ Nothing else. The executable depends on no system library, and Go is not needed 
 
 ### Install
 
-Take the file matching your machine from the [releases page](https://github.com/Dhafer84/firstgreenci/releases/latest):
+**On macOS, with Homebrew** — the shortest way:
+
+```bash
+brew install Dhafer84/tap/firstgreenci
+```
+
+`act` is installed along with it; only Docker is left to get. Then run `firstgreenci doctor`, which checks everything and explains what is missing.
+
+**Anywhere else, or without Homebrew** — take the file matching your machine from the [releases page](https://github.com/Dhafer84/firstgreenci/releases/latest):
 
 | Your machine | File to take |
 | --- | --- |

@@ -49,6 +49,13 @@ jobs:
           version: "~> v2"
           args: release --clean
         env:
-          # Given by GitHub Actions itself. No personal token is created,
-          # stored, or handed to anyone.
+          # Given by GitHub Actions itself. It reaches only this repository.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Publishing the Homebrew cask means writing into another
+          # repository, which the token above cannot do. This one is a
+          # fine-grained token, scoped to the tap and to nothing else.
+          #
+          # When the secret does not exist it arrives empty, and the cask is
+          # skipped: the binaries are still published. See skip_upload in
+          # .goreleaser.yaml.
+          HOMEBREW_TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}

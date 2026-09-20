@@ -10,6 +10,11 @@ version: 2
 
 project_name: firstgreenci
 
+# Declaring the variable with an empty default lets the templates below read
+# it even when nobody set it, instead of failing on an unknown key.
+env:
+  - HOMEBREW_TAP_TOKEN={{ if index .Env "HOMEBREW_TAP_TOKEN" }}{{ .Env.HOMEBREW_TAP_TOKEN }}{{ end }}
+
 before:
   hooks:
     # Never publish something that does not pass its own tests.
@@ -68,6 +73,53 @@ changelog:
   filters:
     exclude:
       - "^Merge "
+
+# Installation through Homebrew, published into a tap of its own.
+#
+# A cask rather than a formula: GoReleaser deprecated the formula form, and
+# Homebrew itself now wants pre-built binaries distributed as casks. The
+# trade-off is that casks only install on macOS — Linux users take the
+# archive or go install — and that Homebrew marks what a cask installs as
+# quarantined. Our binaries are not signed, so Gatekeeper would refuse to run
+# them; the hook below removes that mark at install time.
+homebrew_casks:
+  - name: firstgreenci
+    # Writing into a second repository needs a token of its own. The one
+    # GitHub Actions provides reaches only the repository it runs in.
+    repository:
+      owner: Dhafer84
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: Casks
+    homepage: https://github.com/Dhafer84/firstgreenci
+    description: Takes your project to its first green CI pipeline, without writing any YAML
+    # Without a token the cask is simply not published, and the binaries go
+    # out all the same. A tag pushed before the token exists must not take
+    # the whole release down with it.
+    skip_upload: '{{ if .Env.HOMEBREW_TAP_TOKEN }}false{{ else }}true{{ end }}'
+    binaries:
+      - firstgreenci
+    dependencies:
+      # act runs the pipeline locally, so Homebrew installs it for the user.
+      #
+      # Docker is deliberately left out, although a cask could depend on it:
+      # it would force Docker Desktop, and its licence terms, on people who
+      # already run Colima, OrbStack or Rancher. The caveats say what to do
+      # instead.
+      - formula: act
+    hooks:
+      post:
+        install: |
+          system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/firstgreenci"]
+    caveats: |
+      Docker doit être installé et démarré :
+        https://www.docker.com/products/docker-desktop/
+      Vérifiez que tout est prêt :  firstgreenci doctor
+
+      Docker must be installed and running:
+        https://www.docker.com/products/docker-desktop/
+      Check that everything is ready:  firstgreenci doctor
 
 release:
   draft: false
