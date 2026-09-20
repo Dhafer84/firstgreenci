@@ -31,22 +31,24 @@ Une cause et une action. Jamais un mur de logs.
 
 ### Prérequis
 
-- **Docker**, démarré. `firstgreenci doctor` vérifie et explique quoi faire.
-- **act**, qui exécute les workflows GitHub Actions en local : `brew install act`.
+- **Docker**, démarré. C'est le seul prérequis que vous devez obtenir vous-même.
+- **act**, qui exécute les workflows GitHub Actions en local. Les méthodes 1 et 2 ci-dessous l'installent pour vous.
 
 Rien d'autre. L'exécutable ne dépend d'aucune bibliothèque système, et Go n'est pas nécessaire pour l'utiliser.
 
 ### Installation
 
-**Sur macOS, avec Homebrew** — le plus court :
+Trois méthodes. Prenez celle qui correspond à votre système.
+
+#### 1. macOS — avec Homebrew
 
 ```bash
 brew install Dhafer84/tap/firstgreenci
 ```
 
-`act` est installé en même temps ; il ne vous restera que Docker. Lancez ensuite `firstgreenci doctor`, qui vérifie tout et explique ce qui manque.
+`act` est installé en même temps. Il ne vous restera que Docker.
 
-**Sur Windows, avec Scoop** :
+#### 2. Windows — avec Scoop
 
 ```powershell
 scoop bucket add firstgreenci https://github.com/Dhafer84/homebrew-tap
@@ -55,7 +57,9 @@ scoop install firstgreenci
 
 `act` est installé en même temps, là aussi. Le nom du dépôt parle de Homebrew : c'est normal, il héberge les recettes des deux systèmes.
 
-**Sur Linux, ou sans gestionnaire de paquets** — prenez le fichier qui correspond à votre machine sur la [page des versions](https://github.com/Dhafer84/firstgreenci/releases/latest) :
+#### 3. Linux, ou sans gestionnaire de paquets — téléchargement direct
+
+Prenez le fichier qui correspond à votre machine sur la [page des versions](https://github.com/Dhafer84/firstgreenci/releases/latest) :
 
 | Votre machine | Fichier à prendre |
 | --- | --- |
@@ -64,13 +68,12 @@ scoop install firstgreenci
 | Windows | `..._Windows_x86-64.zip` |
 | Linux | `..._Linux_x86-64.tar.gz` |
 
-**macOS et Linux.** Téléchargez avec `curl` plutôt qu'avec le navigateur, en remplaçant le numéro de version et le nom du fichier par les vôtres :
+**Sur macOS et Linux**, téléchargez avec `curl` plutôt qu'avec le navigateur, en adaptant la version et le nom du fichier :
 
 ```bash
-curl -L -o firstgreenci.tar.gz https://github.com/Dhafer84/firstgreenci/releases/download/v0.1.0/firstgreenci_0.1.0_macOS_AppleSilicon.tar.gz
+curl -L -o firstgreenci.tar.gz https://github.com/Dhafer84/firstgreenci/releases/download/v0.1.2/firstgreenci_0.1.2_macOS_AppleSilicon.tar.gz
 tar -xzf firstgreenci.tar.gz
 sudo mv firstgreenci /usr/local/bin/
-firstgreenci doctor
 ```
 
 Pourquoi `curl` ? Parce qu'un fichier téléchargé par le navigateur est mis en quarantaine par macOS et refuse de se lancer. Si cela vous arrive :
@@ -79,21 +82,25 @@ Pourquoi `curl` ? Parce qu'un fichier téléchargé par le navigateur est mis en
 xattr -d com.apple.quarantine firstgreenci
 ```
 
-**Windows, sans Scoop.** Décompressez le `.zip`, puis placez `firstgreenci.exe` dans un dossier de votre `PATH`. SmartScreen peut avertir à la première exécution : les exécutables ne sont pas signés, faute de certificat.
+**Sur Windows**, décompressez le `.zip`, puis placez `firstgreenci.exe` dans un dossier de votre `PATH`. SmartScreen peut avertir à la première exécution : les exécutables ne sont pas signés, faute de certificat.
 
-**Vérifier ce que vous avez téléchargé.** Chaque version est accompagnée d'un `checksums.txt` :
+**Vérifiez ce que vous avez téléchargé.** Chaque version est accompagnée d'un `checksums.txt` :
 
 ```bash
 shasum -a 256 -c checksums.txt --ignore-missing
 ```
 
-**Autres façons d'installer**, si Go 1.23 ou plus récent est présent :
+Avec cette méthode, `act` n'est pas installé pour vous : `brew install act`, `scoop install act`, ou les [exécutables d'act](https://github.com/nektos/act/releases).
+
+#### Puis, quelle que soit la méthode
 
 ```bash
-go install github.com/Dhafer84/firstgreenci/cmd/firstgreenci@latest
+firstgreenci doctor
 ```
 
-Ou, depuis une copie du dépôt : `go build -o firstgreenci ./cmd/firstgreenci`
+Il vérifie Docker, act et l'image de conteneur, et explique pas à pas ce qui manque.
+
+*Si vous avez déjà Go 1.23 ou plus récent, `go install github.com/Dhafer84/firstgreenci/cmd/firstgreenci@latest` fonctionne aussi.*
 
 ### Commandes
 
@@ -198,22 +205,24 @@ A cause and an action. Never a wall of logs.
 
 ### Requirements
 
-- **Docker**, started. `firstgreenci doctor` checks it and explains what to do.
-- **act**, which runs GitHub Actions workflows locally: `brew install act`.
+- **Docker**, started. It is the only prerequisite you have to get yourself.
+- **act**, which runs GitHub Actions workflows locally. Methods 1 and 2 below install it for you.
 
 Nothing else. The executable depends on no system library, and Go is not needed to use it.
 
 ### Install
 
-**On macOS, with Homebrew** — the shortest way:
+Three methods. Take the one matching your system.
+
+#### 1. macOS — with Homebrew
 
 ```bash
 brew install Dhafer84/tap/firstgreenci
 ```
 
-`act` is installed along with it; only Docker is left to get. Then run `firstgreenci doctor`, which checks everything and explains what is missing.
+`act` is installed along with it. Only Docker is left to get.
 
-**On Windows, with Scoop**:
+#### 2. Windows — with Scoop
 
 ```powershell
 scoop bucket add firstgreenci https://github.com/Dhafer84/homebrew-tap
@@ -222,7 +231,9 @@ scoop install firstgreenci
 
 `act` is installed along with it here too. The repository name says Homebrew: that is expected, it holds the recipes for both systems.
 
-**On Linux, or without a package manager** — take the file matching your machine from the [releases page](https://github.com/Dhafer84/firstgreenci/releases/latest):
+#### 3. Linux, or without a package manager — direct download
+
+Take the file matching your machine from the [releases page](https://github.com/Dhafer84/firstgreenci/releases/latest):
 
 | Your machine | File to take |
 | --- | --- |
@@ -231,13 +242,12 @@ scoop install firstgreenci
 | Windows | `..._Windows_x86-64.zip` |
 | Linux | `..._Linux_x86-64.tar.gz` |
 
-**macOS and Linux.** Download with `curl` rather than the browser, replacing the version number and file name with yours:
+**On macOS and Linux**, download with `curl` rather than the browser, adapting the version and the file name:
 
 ```bash
-curl -L -o firstgreenci.tar.gz https://github.com/Dhafer84/firstgreenci/releases/download/v0.1.0/firstgreenci_0.1.0_macOS_AppleSilicon.tar.gz
+curl -L -o firstgreenci.tar.gz https://github.com/Dhafer84/firstgreenci/releases/download/v0.1.2/firstgreenci_0.1.2_macOS_AppleSilicon.tar.gz
 tar -xzf firstgreenci.tar.gz
 sudo mv firstgreenci /usr/local/bin/
-firstgreenci doctor
 ```
 
 Why `curl`? Because a browser-downloaded file is quarantined by macOS and refuses to run. If that happens:
@@ -246,7 +256,7 @@ Why `curl`? Because a browser-downloaded file is quarantined by macOS and refuse
 xattr -d com.apple.quarantine firstgreenci
 ```
 
-**Windows, without Scoop.** Unzip, then put `firstgreenci.exe` in a folder on your `PATH`. SmartScreen may warn on first run: the executables are not signed, for want of a certificate.
+**On Windows**, unzip, then put `firstgreenci.exe` in a folder on your `PATH`. SmartScreen may warn on first run: the executables are not signed, for want of a certificate.
 
 **Check what you downloaded.** Every release ships a `checksums.txt`:
 
@@ -254,11 +264,17 @@ xattr -d com.apple.quarantine firstgreenci
 shasum -a 256 -c checksums.txt --ignore-missing
 ```
 
-**Other ways to install**, if Go 1.23 or newer is present:
+With this method `act` is not installed for you: `brew install act`, `scoop install act`, or the [act executables](https://github.com/nektos/act/releases).
+
+#### Then, whichever method you used
 
 ```bash
-go install github.com/Dhafer84/firstgreenci/cmd/firstgreenci@latest
+firstgreenci doctor
 ```
+
+It checks Docker, act and the container image, and explains step by step what is missing.
+
+*If you already have Go 1.23 or newer, `go install github.com/Dhafer84/firstgreenci/cmd/firstgreenci@latest` works too.*
 
 ### Commands
 
