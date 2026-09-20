@@ -22,7 +22,7 @@ jobs:
       - name: "Get the code"
         uses: actions/checkout@v4
 
-      # Installs the same version of Node.js as the one on your computer.
+      # Installs Node.js, in the version given just below.
       - name: "Install Node.js"
         uses: actions/setup-node@v4
         with:

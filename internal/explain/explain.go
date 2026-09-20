@@ -32,16 +32,20 @@ func Steps(catalog *i18n.Catalog, project *detect.Project) []Step {
 		},
 	}
 
+	// The wording depends on where the version came from. Claiming "the same
+	// version as on your computer" about a number nobody declared was false,
+	// and measurably so: one project ran Node 26 while the pipeline was
+	// given 20.
 	switch project.Language {
 	case detect.JavaScript:
 		steps = append(steps, Step{
 			Title:       catalog.T("workflow.step.setup_node.name"),
-			Description: catalog.T("explain.step.setup_node", project.RuntimeVersion),
+			Description: runtimeDescription(catalog, "explain.step.setup_node", project),
 		})
 	default:
 		steps = append(steps, Step{
 			Title:       catalog.T("workflow.step.setup_python.name"),
-			Description: catalog.T("explain.step.setup_python", project.RuntimeVersion),
+			Description: runtimeDescription(catalog, "explain.step.setup_python", project),
 		})
 	}
 
@@ -91,6 +95,24 @@ func Warnings(catalog *i18n.Catalog, project *detect.Project) []string {
 	messages := make([]string, 0, len(project.Warnings))
 	for _, warning := range project.Warnings {
 		messages = append(messages, catalog.T(warning.MessageKey, warning.Args...))
+	}
+	return messages
+}
+
+// runtimeDescription says where the version came from, or admits that it was
+// chosen for the user.
+func runtimeDescription(catalog *i18n.Catalog, prefix string, project *detect.Project) string {
+	if project.RuntimeVersionSource == "" {
+		return catalog.T(prefix+".default", project.RuntimeVersion)
+	}
+	return catalog.T(prefix+".declared", project.RuntimeVersion, project.RuntimeVersionSource)
+}
+
+// Notes renders what is worth knowing but breaks nothing.
+func Notes(catalog *i18n.Catalog, project *detect.Project) []string {
+	messages := make([]string, 0, len(project.Notes))
+	for _, note := range project.Notes {
+		messages = append(messages, catalog.T(note.MessageKey, note.Args...))
 	}
 	return messages
 }

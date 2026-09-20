@@ -34,6 +34,8 @@
   "detect.evidence.setup_py": "%s : un projet Python installable.",
   "detect.evidence.test_files": "%s : des fichiers de test y ont été trouvés.",
   "detect.evidence.tests_dir": "%s : le dossier qui contient les tests.",
+  "detect.note.no_runtime_version.node": "Votre projet ne fixe pas de version de Node.js ; le pipeline utilisera la %s.\nPour la choisir : un fichier .nvmrc, ou « engines » dans package.json.",
+  "detect.note.no_runtime_version.python": "Votre projet ne fixe pas de version de Python ; le pipeline utilisera la %s.\nPour la choisir : un fichier .python-version, ou requires-python dans pyproject.toml.",
   "detect.summary": "Projet détecté : %s (%s, %s)",
   "detect.warning.no_test_tool": "Vos tests ne seront pas trouvés par unittest.\n\n  Fichiers de test          : %d\n  Fonctions « test_ »       : %d\n  Classes unittest.TestCase : 0\n  Outil de test déclaré     : aucun\n\nunittest ne collecte que les classes unittest.TestCase : votre pipeline sera rouge.\n\nAjoutez « pytest » à vos dépendances — requirements.txt, ou requirements-dev.txt pour ne pas l'envoyer en production — puis relancez :\n  firstgreenci init --force",
 
@@ -56,8 +58,10 @@
 
   "explain.step.checkout": "copie votre projet sur la machine qui teste.",
   "explain.step.install": "installe les bibliothèques dont votre projet a besoin.",
-  "explain.step.setup_node": "installe Node.js %s, la même version que chez vous.",
-  "explain.step.setup_python": "installe Python %s, la même version que chez vous.",
+  "explain.step.setup_node.declared": "installe Node.js %s, la version déclarée dans %s.",
+  "explain.step.setup_node.default": "installe Node.js %s, une version choisie par défaut : votre projet n'en déclare aucune.",
+  "explain.step.setup_python.declared": "installe Python %s, la version déclarée dans %s.",
+  "explain.step.setup_python.default": "installe Python %s, une version choisie par défaut : votre projet n'en déclare aucune.",
   "explain.step.test": "lance « %s », comme sur votre ordinateur.",
 
   "image.question.default_used": "Je ne peux pas vous poser la question ici : j'utilise l'image fidèle à GitHub (%s).",
@@ -155,9 +159,9 @@
   "workflow.step.checkout.name": "Récupérer le code",
   "workflow.step.install.comment": "Installe les bibliothèques dont votre projet a besoin.",
   "workflow.step.install.name": "Installer les dépendances",
-  "workflow.step.setup_node.comment": "Installe la même version de Node.js que celle de votre ordinateur.",
+  "workflow.step.setup_node.comment": "Installe Node.js, dans la version indiquée juste en dessous.",
   "workflow.step.setup_node.name": "Installer Node.js",
-  "workflow.step.setup_python.comment": "Installe la même version de Python que celle de votre ordinateur.",
+  "workflow.step.setup_python.comment": "Installe Python, dans la version indiquée juste en dessous.",
   "workflow.step.setup_python.name": "Installer Python",
   "workflow.step.test.comment": "Exécute vos tests. Si l'un d'eux échoue, la vérification passe au rouge.",
   "workflow.step.test.name": "Lancer les tests"

@@ -22,7 +22,7 @@ jobs:
       - name: "Récupérer le code"
         uses: actions/checkout@v4
 
-      # Installe la même version de Node.js que celle de votre ordinateur.
+      # Installe Node.js, dans la version indiquée juste en dessous.
       - name: "Installer Node.js"
         uses: actions/setup-node@v4
         with:

@@ -44,10 +44,14 @@ type Evidence struct {
 	Args []any
 }
 
-// Warning is something worth telling the user before the pipeline runs,
+// Notice is something worth telling the user before the pipeline runs,
 // rather than letting a red run reveal it. Like Evidence, it carries a
 // translation key and never text.
-type Warning struct {
+//
+// A project holds them at two levels of voice: Warnings for what will make
+// the pipeline red, Notes for what is merely worth knowing. Keeping the loud
+// mark rare is what keeps it read.
+type Notice struct {
 	MessageKey string
 	Args       []any
 }
@@ -61,6 +65,12 @@ type Project struct {
 	InstallCommand string
 	TestCommand    string
 
+	// RuntimeVersionSource names the file the version came from, and is
+	// empty when no file declared one and a default was used. Without it the
+	// tool claimed to install "the same version as on your computer" even
+	// when it had invented the number.
+	RuntimeVersionSource string
+
 	// TestTool and Manifest are short labels used in the one-line summary,
 	// for example "pytest" and "requirements.txt".
 	TestTool string
@@ -71,7 +81,10 @@ type Project struct {
 	// Warnings are the problems the detection can see coming. They never
 	// change the commands above: the tool reports what it found, it does not
 	// decide to install something the user never declared.
-	Warnings []Warning
+	Warnings []Notice
+
+	// Notes are worth knowing but break nothing.
+	Notes []Notice
 }
 
 // NotRecognisedError reports that no supported project was found.

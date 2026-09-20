@@ -22,7 +22,7 @@ jobs:
       - name: "Récupérer le code"
         uses: actions/checkout@v4
 
-      # Installe la même version de Python que celle de votre ordinateur.
+      # Installe Python, dans la version indiquée juste en dessous.
       - name: "Installer Python"
         uses: actions/setup-python@v5
         with:

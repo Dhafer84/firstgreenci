@@ -10,10 +10,12 @@ import (
 // detectPython describes a Python project: how its dependencies are declared,
 // which tool installs them, and which command runs its tests.
 func detectPython(root string) (*Project, error) {
+	version, source := pythonVersion(root)
 	project := &Project{
-		Root:           root,
-		Language:       Python,
-		RuntimeVersion: pythonVersion(root),
+		Root:                 root,
+		Language:             Python,
+		RuntimeVersion:       version,
+		RuntimeVersionSource: source,
 	}
 
 	pyproject := readFile(root, "pyproject.toml")
@@ -67,6 +69,7 @@ func detectPython(root string) (*Project, error) {
 	project.TestTool, project.TestCommand = pythonTestCommand(root, project)
 	project.addTestEvidence(root)
 	project.warnAboutUncollectableTests(root)
+	project.noteMissingRuntimeVersion("detect.note.no_runtime_version.python")
 
 	return project, nil
 }
@@ -110,9 +113,13 @@ func pytestDeclaredIn(root string) string {
 
 // pythonVersion reads the version the project pins, and falls back to a
 // recent one when it pins none.
-func pythonVersion(root string) string {
+//
+// It returns the file the version came from, empty on the fallback. Saying
+// "the same version as on your computer" about a number nobody declared is a
+// claim the tool cannot make.
+func pythonVersion(root string) (version, source string) {
 	if pinned := firstVersion(readFile(root, ".python-version"), true); pinned != "" {
-		return pinned
+		return pinned, ".python-version"
 	}
 
 	for _, line := range strings.Split(readFile(root, "pyproject.toml"), "\n") {
@@ -122,11 +129,11 @@ func pythonVersion(root string) string {
 			continue
 		}
 		if required := firstVersion(trimmed, true); required != "" {
-			return required
+			return required, "pyproject.toml"
 		}
 	}
 
-	return defaultPythonVersion
+	return defaultPythonVersion, ""
 }
 
 // addTestEvidence records where the tests were found, when they can be seen.
@@ -207,10 +214,24 @@ func (p *Project) warnAboutUncollectableTests(root string) {
 		return
 	}
 
-	p.Warnings = append(p.Warnings, Warning{
+	p.Warnings = append(p.Warnings, Notice{
 		MessageKey: "detect.warning.no_test_tool",
 		Args:       []any{shape.files, shape.functions},
 	})
+}
+
+// noteMissingRuntimeVersion says, quietly, that the version in the pipeline
+// was chosen rather than read.
+//
+// It deliberately does not show the version the machine runs. On the project
+// that exposed this defect, python3 reports 3.14 while the project itself
+// runs 3.12 inside its .venv — announcing the first would repeat the very
+// mistake being fixed: claiming to know what cannot be known from here.
+func (p *Project) noteMissingRuntimeVersion(messageKey string) {
+	if p.RuntimeVersionSource != "" {
+		return
+	}
+	p.Notes = append(p.Notes, Notice{MessageKey: messageKey, Args: []any{p.RuntimeVersion}})
 }
 
 // addEvidence appends one observed fact to the project.

@@ -215,6 +215,7 @@ func runInit(env Environment, args []string) int {
 
 	fmt.Fprintln(env.Stdout, explain.Summary(catalog, project))
 	printEvidence(env, catalog, project)
+	printNotes(env, catalog, project)
 	printWarnings(env, catalog, project)
 
 	if *dryRun {
@@ -469,6 +470,15 @@ func printEvidence(env Environment, catalog *i18n.Catalog, project *detect.Proje
 	fmt.Fprintln(env.Stdout, catalog.T("detect.evidence.header"))
 	for _, line := range lines {
 		fmt.Fprintf(env.Stdout, "  - %s\n", line)
+	}
+}
+
+// printNotes shows what is worth knowing but breaks nothing. The quiet mark
+// is deliberate: these appear on most projects, and a loud one used often
+// stops being read.
+func printNotes(env Environment, catalog *i18n.Catalog, project *detect.Project) {
+	for _, note := range explain.Notes(catalog, project) {
+		printBlock(env, markNote, note)
 	}
 }
 

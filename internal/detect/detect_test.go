@@ -415,3 +415,71 @@ func TestSubProjectsIgnoreNoise(t *testing.T) {
 		}
 	}
 }
+
+// TestRuntimeVersionSource pins down where each version came from. Without
+// this, the tool claimed to install "the same version as on your computer"
+// about a number it had invented: one project ran Node 26 while the pipeline
+// was handed 20.
+func TestRuntimeVersionSource(t *testing.T) {
+	tests := []struct {
+		project string
+		version string
+		source  string
+	}{
+		{project: "python-root-tests", version: "3.11", source: ".python-version"},
+		{project: "python-poetry", version: "3.11", source: "pyproject.toml"},
+		{project: "python-pyproject", version: "3.10", source: "pyproject.toml"},
+		{project: "js-pnpm", version: "18", source: ".nvmrc"},
+		{project: "js-yarn", version: "22", source: "engines"},
+		// Declared nowhere: the number is the tool's own choice, and saying
+		// so is the whole point.
+		{project: "python-pip-pytest", version: "3.12", source: ""},
+		{project: "python-pipenv", version: "3.12", source: ""},
+		{project: "js-npm", version: "20", source: ""},
+		{project: "js-no-lockfile", version: "20", source: ""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.project, func(t *testing.T) {
+			project, err := detect.Detect(projectPath(test.project))
+			if err != nil {
+				t.Fatalf("Detect: %v", err)
+			}
+			if project.RuntimeVersion != test.version {
+				t.Errorf("RuntimeVersion = %q, want %q", project.RuntimeVersion, test.version)
+			}
+			if project.RuntimeVersionSource != test.source {
+				t.Errorf("RuntimeVersionSource = %q, want %q", project.RuntimeVersionSource, test.source)
+			}
+		})
+	}
+}
+
+// TestNoteFollowsTheVersionSource checks the note appears exactly when the
+// version was chosen rather than read, and never otherwise.
+func TestNoteFollowsTheVersionSource(t *testing.T) {
+	projects := []string{
+		"python-pip-pytest", "python-poetry", "python-pyproject", "python-pipenv",
+		"python-root-tests", "python-requirements-dev", "python-script-tests",
+		"js-npm", "js-yarn", "js-pnpm", "js-no-lockfile",
+	}
+
+	for _, name := range projects {
+		t.Run(name, func(t *testing.T) {
+			project, err := detect.Detect(projectPath(name))
+			if err != nil {
+				t.Fatalf("Detect: %v", err)
+			}
+
+			declared := project.RuntimeVersionSource != ""
+			noted := len(project.Notes) > 0
+
+			if declared && noted {
+				t.Errorf("the version comes from %q, yet a note was added", project.RuntimeVersionSource)
+			}
+			if !declared && !noted {
+				t.Error("the version was chosen by the tool, yet nothing said so")
+			}
+		})
+	}
+}

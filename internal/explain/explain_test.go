@@ -116,3 +116,50 @@ func TestEvidenceIsTranslated(t *testing.T) {
 		}
 	}
 }
+
+// TestRuntimeDescriptionTellsTheTruth is the guard on the claim that was
+// false: a version nobody declared must not be described as the user's own.
+func TestRuntimeDescriptionTellsTheTruth(t *testing.T) {
+	catalog, err := i18n.Load(firstgreenci.LocalesFS, "fr")
+	if err != nil {
+		t.Fatalf("load catalog: %v", err)
+	}
+
+	tests := []struct {
+		project string
+		says    string
+		notSays string
+	}{
+		{project: "js-pnpm", says: ".nvmrc", notSays: "par défaut"},
+		{project: "js-npm", says: "par défaut", notSays: ".nvmrc"},
+		{project: "python-root-tests", says: ".python-version", notSays: "par défaut"},
+		{project: "python-pip-pytest", says: "par défaut", notSays: "déclarée dans"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.project, func(t *testing.T) {
+			project, err := detect.Detect(projectPath(test.project))
+			if err != nil {
+				t.Fatalf("Detect: %v", err)
+			}
+
+			var description string
+			for _, step := range explain.Steps(catalog, project) {
+				if strings.Contains(step.Title, "Installer") && !strings.Contains(step.Title, "dépendances") {
+					description = step.Description
+				}
+			}
+
+			if !strings.Contains(description, test.says) {
+				t.Errorf("the description does not mention %q: %q", test.says, description)
+			}
+			if strings.Contains(description, test.notSays) {
+				t.Errorf("the description wrongly mentions %q: %q", test.notSays, description)
+			}
+			// The claim that started all this must be gone for good.
+			if strings.Contains(description, "la même version que chez vous") {
+				t.Errorf("the parity claim is back: %q", description)
+			}
+		})
+	}
+}

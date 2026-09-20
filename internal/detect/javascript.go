@@ -40,11 +40,13 @@ func detectJavaScript(root string) (*Project, error) {
 		return nil, &InvalidManifestError{File: "package.json", Err: err}
 	}
 
+	version, source := nodeVersion(root, manifest)
 	project := &Project{
-		Root:           root,
-		Language:       JavaScript,
-		Manifest:       "package.json",
-		RuntimeVersion: nodeVersion(root, manifest),
+		Root:                 root,
+		Language:             JavaScript,
+		Manifest:             "package.json",
+		RuntimeVersion:       version,
+		RuntimeVersionSource: source,
 	}
 	project.addEvidence("package.json", "detect.evidence.package_json")
 
@@ -83,18 +85,21 @@ func detectJavaScript(root string) (*Project, error) {
 	}
 	project.TestTool = project.TestCommand
 	project.addEvidence("package.json", "detect.evidence.script_test", script)
+	project.noteMissingRuntimeVersion("detect.note.no_runtime_version.node")
 
 	return project, nil
 }
 
 // nodeVersion reads the version the project pins, and falls back to a recent
 // long-term-support release when it pins none.
-func nodeVersion(root string, manifest packageJSON) string {
+//
+// It returns the file the version came from, empty on the fallback.
+func nodeVersion(root string, manifest packageJSON) (version, source string) {
 	if pinned := firstVersion(readFile(root, ".nvmrc"), false); pinned != "" {
-		return pinned
+		return pinned, ".nvmrc"
 	}
 	if required := firstVersion(manifest.Engines.Node, false); required != "" {
-		return required
+		return required, "engines"
 	}
-	return defaultNodeVersion
+	return defaultNodeVersion, ""
 }

@@ -22,7 +22,7 @@ jobs:
       - name: "Get the code"
         uses: actions/checkout@v4
 
-      # Installs the same version of Python as the one on your computer.
+      # Installs Python, in the version given just below.
       - name: "Install Python"
         uses: actions/setup-python@v5
         with:

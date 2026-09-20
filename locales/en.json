@@ -34,6 +34,8 @@
   "detect.evidence.setup_py": "%s: an installable Python project.",
   "detect.evidence.test_files": "%s: test files were found there.",
   "detect.evidence.tests_dir": "%s: the folder that holds the tests.",
+  "detect.note.no_runtime_version.node": "Your project does not pin a Node.js version; the pipeline will use %s.\nTo choose it: a .nvmrc file, or \"engines\" in package.json.",
+  "detect.note.no_runtime_version.python": "Your project does not pin a Python version; the pipeline will use %s.\nTo choose it: a .python-version file, or requires-python in pyproject.toml.",
   "detect.summary": "Project detected: %s (%s, %s)",
   "detect.warning.no_test_tool": "Your tests will not be found by unittest.\n\n  Test files                : %d\n  \"test_\" functions         : %d\n  unittest.TestCase classes : 0\n  Test tool declared        : none\n\nunittest only collects unittest.TestCase classes: your pipeline will be red.\n\nAdd \"pytest\" to your dependencies — requirements.txt, or requirements-dev.txt to keep it out of production — then run again:\n  firstgreenci init --force",
 
@@ -56,8 +58,10 @@
 
   "explain.step.checkout": "copies your project onto the machine that runs the tests.",
   "explain.step.install": "installs the libraries your project needs.",
-  "explain.step.setup_node": "installs Node.js %s, the same version as on your machine.",
-  "explain.step.setup_python": "installs Python %s, the same version as on your machine.",
+  "explain.step.setup_node.declared": "installs Node.js %s, the version declared in %s.",
+  "explain.step.setup_node.default": "installs Node.js %s, a version chosen for you: your project declares none.",
+  "explain.step.setup_python.declared": "installs Python %s, the version declared in %s.",
+  "explain.step.setup_python.default": "installs Python %s, a version chosen for you: your project declares none.",
   "explain.step.test": "runs \"%s\", just like on your computer.",
 
   "image.question.default_used": "I cannot ask you here, so I am using the image that is faithful to GitHub (%s).",
@@ -155,9 +159,9 @@
   "workflow.step.checkout.name": "Get the code",
   "workflow.step.install.comment": "Installs the libraries your project needs.",
   "workflow.step.install.name": "Install the dependencies",
-  "workflow.step.setup_node.comment": "Installs the same version of Node.js as the one on your computer.",
+  "workflow.step.setup_node.comment": "Installs Node.js, in the version given just below.",
   "workflow.step.setup_node.name": "Install Node.js",
-  "workflow.step.setup_python.comment": "Installs the same version of Python as the one on your computer.",
+  "workflow.step.setup_python.comment": "Installs Python, in the version given just below.",
   "workflow.step.setup_python.name": "Install Python",
   "workflow.step.test.comment": "Runs your tests. If one of them fails, the check turns red.",
   "workflow.step.test.name": "Run the tests"
