@@ -185,18 +185,18 @@ func TestResolve(t *testing.T) {
 	}
 }
 
-// TestSystemLocaleNeverPanics calls the real reader. Its answer depends on
+// TestSystemLanguageNeverPanics calls the real reader. Its answer depends on
 // the machine, so only its contract is checked: it either names a locale or
 // says nothing, and it never takes long enough to be noticed.
-func TestSystemLocaleNeverPanics(t *testing.T) {
+func TestSystemLanguageNeverPanics(t *testing.T) {
 	start := time.Now()
-	got := i18n.SystemLocale()
+	got := i18n.SystemLanguage()
 	elapsed := time.Since(start)
 
 	if runtime.GOOS != "darwin" && got != "" {
-		t.Errorf("SystemLocale on %s returned %q, want nothing", runtime.GOOS, got)
+		t.Errorf("SystemLanguage on %s returned %q, want nothing", runtime.GOOS, got)
 	}
 	if elapsed > 5*time.Second {
-		t.Errorf("SystemLocale took %s, which a user would notice", elapsed)
+		t.Errorf("SystemLanguage took %s, which a user would notice", elapsed)
 	}
 }

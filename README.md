@@ -48,6 +48,14 @@ brew install Dhafer84/tap/firstgreenci
 
 `act` est installé en même temps. Il ne vous restera que Docker.
 
+Pour mettre à jour plus tard :
+
+```bash
+brew update && brew upgrade firstgreenci
+```
+
+Le `brew update` n'est pas facultatif : Homebrew ne rafraîchit pas les dépôts tiers tout seul, et `brew upgrade` seul répondrait « already installed » même si une nouvelle version existe.
+
 #### 2. Windows — avec Scoop
 
 ```powershell
@@ -153,7 +161,7 @@ L'exécution locale ne peut pas être identique à celle de GitHub. Les écarts 
 - **Image du conteneur.** `catthehacker/ubuntu` n'est pas l'image de GitHub. Des outils présents chez GitHub peuvent y manquer.
 - **Cache, services et matrices** ne sont pas reproduits à l'identique par act.
 - **Une question au premier lancement.** L'outil évite les questions, mais le choix de l'image engage plus d'un gigaoctet de téléchargement : il ne se devine pas.
-- **Langue du système.** Sur macOS, quand ni `LANG` ni `LC_ALL` ne sont définies, l'outil lit la langue du système : rien à faire. Sous Windows, il ne la lit pas — cela coûterait un démarrage de PowerShell à chaque commande — et retombe sur l'anglais ; utilisez `--lang fr` ou la variable `FIRSTGREENCI_LANG`.
+- **Choix de la langue.** `LANG` et `LC_ALL` font foi quand elles existent, et elles sont presque toujours définies dans un terminal — y compris sur un Mac réglé en français, où macOS peut composer une valeur anglaise si votre région n'a pas de locale française. **En l'absence de ces variables seulement**, l'outil lit la langue d'interface de macOS. Sous Windows il ne la lit pas, car cela coûterait un démarrage de PowerShell à chaque commande. Dans tous les cas, `--lang fr` ou `FIRSTGREENCI_LANG=fr` tranche.
 - **Lecture de `pyproject.toml`** : balayage ligne par ligne, sans analyseur TOML, pour éviter toute dépendance externe.
 
 ### Une erreur que l'outil ne sait pas traduire ?
@@ -221,6 +229,14 @@ brew install Dhafer84/tap/firstgreenci
 ```
 
 `act` is installed along with it. Only Docker is left to get.
+
+To update later:
+
+```bash
+brew update && brew upgrade firstgreenci
+```
+
+The `brew update` is not optional: Homebrew does not refresh third-party taps on its own, and `brew upgrade` alone would answer "already installed" even when a new version exists.
 
 #### 2. Windows — with Scoop
 
@@ -305,7 +321,7 @@ Options for `run`: `--lang fr|en`, `--verbose`, `--image <reference>`.
 - **Container image.** `catthehacker/ubuntu` is not GitHub's image; tools present on GitHub may be missing.
 - **Cache, services and matrices** are not reproduced exactly by act.
 - **One question on the first run.** The tool avoids questions, but choosing the image commits more than a gigabyte of download, and cannot be guessed for you.
-- **System language.** On macOS, when neither `LANG` nor `LC_ALL` is set, the tool reads the system language: nothing to do. On Windows it does not — that would cost a PowerShell start on every command — and falls back to English; use `--lang fr` or the `FIRSTGREENCI_LANG` variable.
+- **Choosing the language.** `LANG` and `LC_ALL` decide when they exist, and a terminal almost always sets them — including on a Mac set to French, where macOS may compose an English value if your region has no French locale. **Only when those variables are absent** does the tool read the macOS interface language. On Windows it does not, because that would cost a PowerShell start on every command. Either way, `--lang fr` or `FIRSTGREENCI_LANG=fr` settles it.
 - **Reading `pyproject.toml`**: scanned line by line, without a TOML parser, to avoid an external dependency.
 
 ### An error it cannot translate?

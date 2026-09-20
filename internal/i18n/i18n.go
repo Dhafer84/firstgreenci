@@ -97,41 +97,69 @@ func IsSupported(lang string) bool {
 	return false
 }
 
-// systemLocaleTimeout bounds the one subprocess this package may start. A
+// systemLanguageTimeout bounds the one subprocess this package may start. A
 // system that does not answer must never freeze the tool.
-const systemLocaleTimeout = 2 * time.Second
+const systemLanguageTimeout = 2 * time.Second
 
-// SystemLocale reports the language the operating system is set to, or an
+// SystemLanguage reports the language the operating system is set to, or an
 // empty string when it cannot be told.
 //
-// Only macOS is covered, and for a reason seen on a real machine: a terminal
-// there often starts with neither LANG nor LC_ALL, so a French user was
-// answered in English while macOS knew perfectly well the locale was fr_TN.
+// It reads AppleLanguages, the list of interface languages, and not
+// AppleLocale. That distinction cost a released bug: AppleLocale describes
+// the region and the date and number formats, and the two disagree as soon
+// as someone picks a language from one country and a region from another. A
+// Mac whose interface is English can report AppleLocale fr_TN, and reading
+// it answered a English-speaking user in French.
 //
-// Windows is left out on purpose. Reading its locale means starting
-// PowerShell, which would cost about half a second on every command.
-func SystemLocale() string {
+// Only macOS is covered. Windows is left out on purpose: reading its
+// language means starting PowerShell, which would cost about half a second
+// on every command.
+func SystemLanguage() string {
 	if runtime.GOOS != "darwin" {
 		return ""
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), systemLocaleTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), systemLanguageTimeout)
 	defer cancel()
 
-	output, err := exec.CommandContext(ctx, "defaults", "read", "-g", "AppleLocale").Output()
+	output, err := exec.CommandContext(ctx, "defaults", "read", "-g", "AppleLanguages").Output()
 	if err != nil {
 		return ""
 	}
-	return strings.TrimSpace(string(output))
+	return firstAppleLanguage(string(output))
+}
+
+// firstAppleLanguage picks the preferred language out of what defaults
+// prints, which is a property list array:
+//
+//	(
+//	    "en-US",
+//	    "en-GB"
+//	)
+//
+// Values come quoted or bare depending on their content, so both are
+// accepted. Anything unreadable yields an empty string, and English applies.
+func firstAppleLanguage(output string) string {
+	for _, line := range strings.Split(output, "\n") {
+		entry := strings.TrimSpace(line)
+		if entry == "" || entry == "(" || entry == ")" {
+			continue
+		}
+
+		entry = strings.TrimSuffix(entry, ",")
+		entry = strings.Trim(entry, `"`)
+		return strings.TrimSpace(entry)
+	}
+	return ""
 }
 
 // Resolve picks the language to use, in order of decreasing priority: the
 // --lang flag, FIRSTGREENCI_LANG, the usual POSIX locale variables, and
 // finally the language of the system itself.
 //
-// lookupEnv and systemLocale are injected so that the resolution can be
+// lookupEnv and systemLanguage are injected so that the resolution can be
 // tested for every system without running on it.
-func Resolve(explicit string, lookupEnv func(string) (string, bool), systemLocale func() string) string {
+func Resolve(explicit string, lookupEnv func(string) (string, bool), systemLanguage func() string) string {
 	if lang, ok := normalize(explicit); ok {
 		return lang
 	}
@@ -149,8 +177,8 @@ func Resolve(explicit string, lookupEnv func(string) (string, bool), systemLocal
 	// Last resort before English: ask the system. This is where the
 	// subprocess is paid for, and only here — a machine that sets LANG never
 	// reaches this line.
-	if systemLocale != nil {
-		if lang, ok := normalize(systemLocale()); ok {
+	if systemLanguage != nil {
+		if lang, ok := normalize(systemLanguage()); ok {
 			return lang
 		}
 	}

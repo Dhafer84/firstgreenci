@@ -55,8 +55,8 @@ func runCommand(t *testing.T, args ...string) result {
 		Stderr:    &stderr,
 		LookupEnv: func(string) (string, bool) { return "", false },
 		// The machine running the tests must not decide their language.
-		SystemLocale: func() string { return "" },
-		System:       "darwin",
+		SystemLanguage: func() string { return "" },
+		System:         "darwin",
 		// Never read or write the real user's preferences.
 		ConfigPath: filepath.Join(t.TempDir(), "config.json"),
 	})
@@ -257,15 +257,15 @@ func askImage(t *testing.T, answer, configPath string, args ...string) result {
 
 	var stdout, stderr bytes.Buffer
 	code := cli.Run(cli.Environment{
-		Args:         args,
-		Stdin:        strings.NewReader(answer),
-		Stdout:       &stdout,
-		Stderr:       &stderr,
-		LookupEnv:    func(string) (string, bool) { return "", false },
-		SystemLocale: func() string { return "" },
-		System:       "darwin",
-		Interactive:  true,
-		ConfigPath:   configPath,
+		Args:           args,
+		Stdin:          strings.NewReader(answer),
+		Stdout:         &stdout,
+		Stderr:         &stderr,
+		LookupEnv:      func(string) (string, bool) { return "", false },
+		SystemLanguage: func() string { return "" },
+		System:         "darwin",
+		Interactive:    true,
+		ConfigPath:     configPath,
 	})
 	return result{code: code, stdout: stdout.String(), stderr: stderr.String()}
 }
