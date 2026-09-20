@@ -144,7 +144,12 @@ La réponse est retenue dans un petit fichier JSON, dans le dossier de configura
 | JavaScript | Yarn | `yarn.lock` | idem |
 | JavaScript | pnpm | `pnpm-lock.yaml` | idem |
 
-La version du langage est lue dans `.python-version`, `requires-python`, `.nvmrc` ou `engines.node`. À défaut, Python 3.12 et Node.js 20.
+La version du langage est lue dans `.python-version`, `requires-python`, `.nvmrc` ou `engines.node`. À défaut, Python 3.12 et Node.js 20 — et l'outil **le dit**, au lieu de laisser croire qu'il a repris la vôtre :
+
+```
+·  Votre projet ne fixe pas de version de Node.js ; le pipeline utilisera la 20.
+   Pour la choisir : un fichier .nvmrc, ou « engines » dans package.json.
+```
 
 ### Projets à plusieurs dossiers
 
@@ -335,6 +340,17 @@ Options for `run`: `--lang fr|en`, `--verbose`, `--image <reference>`.
 ### On the first run
 
 `run` asks once which container image to run your pipeline in: faithful to GitHub (~1.2 GB, Python and Node preinstalled) or light (~200 MB, no Python). The answer is remembered in a small JSON file in your system's configuration folder. `--image` overrides it for one run. No secret is ever written there.
+
+### What is recognised
+
+Python with pip, Poetry or Pipenv, and JavaScript with npm, Yarn or pnpm.
+
+The runtime version is read from `.python-version`, `requires-python`, `.nvmrc` or `engines.node`. Failing that, Python 3.12 and Node.js 20 — and the tool **says so**, rather than letting you believe it picked up yours:
+
+```
+·  Your project does not pin a Node.js version; the pipeline will use 20.
+   To choose it: a .nvmrc file, or "engines" in package.json.
+```
 
 ### Projects made of several folders
 
