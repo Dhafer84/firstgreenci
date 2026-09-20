@@ -153,7 +153,7 @@ L'exécution locale ne peut pas être identique à celle de GitHub. Les écarts 
 - **Image du conteneur.** `catthehacker/ubuntu` n'est pas l'image de GitHub. Des outils présents chez GitHub peuvent y manquer.
 - **Cache, services et matrices** ne sont pas reproduits à l'identique par act.
 - **Une question au premier lancement.** L'outil évite les questions, mais le choix de l'image engage plus d'un gigaoctet de téléchargement : il ne se devine pas.
-- **Langue du système sous Windows** : `LANG` et `LC_ALL` y sont généralement absentes, l'anglais est donc choisi par défaut. Utilisez `--lang fr` ou `FIRSTGREENCI_LANG`.
+- **Langue du système.** Sur macOS, quand ni `LANG` ni `LC_ALL` ne sont définies, l'outil lit la langue du système : rien à faire. Sous Windows, il ne la lit pas — cela coûterait un démarrage de PowerShell à chaque commande — et retombe sur l'anglais ; utilisez `--lang fr` ou la variable `FIRSTGREENCI_LANG`.
 - **Lecture de `pyproject.toml`** : balayage ligne par ligne, sans analyseur TOML, pour éviter toute dépendance externe.
 
 ### Une erreur que l'outil ne sait pas traduire ?
@@ -305,7 +305,7 @@ Options for `run`: `--lang fr|en`, `--verbose`, `--image <reference>`.
 - **Container image.** `catthehacker/ubuntu` is not GitHub's image; tools present on GitHub may be missing.
 - **Cache, services and matrices** are not reproduced exactly by act.
 - **One question on the first run.** The tool avoids questions, but choosing the image commits more than a gigabyte of download, and cannot be guessed for you.
-- **System language on Windows**: `LANG` and `LC_ALL` are usually absent there, so English is chosen by default. Use `--lang fr` or `FIRSTGREENCI_LANG`.
+- **System language.** On macOS, when neither `LANG` nor `LC_ALL` is set, the tool reads the system language: nothing to do. On Windows it does not — that would cost a PowerShell start on every command — and falls back to English; use `--lang fr` or the `FIRSTGREENCI_LANG` variable.
 - **Reading `pyproject.toml`**: scanned line by line, without a TOML parser, to avoid an external dependency.
 
 ### An error it cannot translate?

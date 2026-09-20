@@ -29,6 +29,8 @@ func TestDoctorReportsEveryTool(t *testing.T) {
 				Stdout:    &stdout,
 				Stderr:    &stderr,
 				LookupEnv: func(string) (string, bool) { return "", false },
+				// The machine running the tests must not decide their language.
+				SystemLocale: func() string { return "" },
 			})
 
 			output := stdout.String()
@@ -64,6 +66,8 @@ func TestDoctorRejectsUnknownFlags(t *testing.T) {
 		Stdout:    &stdout,
 		Stderr:    &stderr,
 		LookupEnv: func(string) (string, bool) { return "", false },
+		// The machine running the tests must not decide their language.
+		SystemLocale: func() string { return "" },
 	})
 
 	if code != 2 {

@@ -6,12 +6,16 @@
 package i18n
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/fs"
+	"os/exec"
 	"path"
+	"runtime"
 	"sort"
 	"strings"
+	"time"
 )
 
 // DefaultLang is used when no language can be determined. It is also the
@@ -93,11 +97,41 @@ func IsSupported(lang string) bool {
 	return false
 }
 
+// systemLocaleTimeout bounds the one subprocess this package may start. A
+// system that does not answer must never freeze the tool.
+const systemLocaleTimeout = 2 * time.Second
+
+// SystemLocale reports the language the operating system is set to, or an
+// empty string when it cannot be told.
+//
+// Only macOS is covered, and for a reason seen on a real machine: a terminal
+// there often starts with neither LANG nor LC_ALL, so a French user was
+// answered in English while macOS knew perfectly well the locale was fr_TN.
+//
+// Windows is left out on purpose. Reading its locale means starting
+// PowerShell, which would cost about half a second on every command.
+func SystemLocale() string {
+	if runtime.GOOS != "darwin" {
+		return ""
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), systemLocaleTimeout)
+	defer cancel()
+
+	output, err := exec.CommandContext(ctx, "defaults", "read", "-g", "AppleLocale").Output()
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(output))
+}
+
 // Resolve picks the language to use, in order of decreasing priority: the
-// --lang flag, FIRSTGREENCI_LANG, then the usual POSIX locale variables.
-// lookupEnv is injected so that the resolution can be tested without touching
-// the environment of the test process.
-func Resolve(explicit string, lookupEnv func(string) (string, bool)) string {
+// --lang flag, FIRSTGREENCI_LANG, the usual POSIX locale variables, and
+// finally the language of the system itself.
+//
+// lookupEnv and systemLocale are injected so that the resolution can be
+// tested for every system without running on it.
+func Resolve(explicit string, lookupEnv func(string) (string, bool), systemLocale func() string) string {
 	if lang, ok := normalize(explicit); ok {
 		return lang
 	}
@@ -108,6 +142,15 @@ func Resolve(explicit string, lookupEnv func(string) (string, bool)) string {
 			continue
 		}
 		if lang, ok := normalize(value); ok {
+			return lang
+		}
+	}
+
+	// Last resort before English: ask the system. This is where the
+	// subprocess is paid for, and only here — a machine that sets LANG never
+	// reaches this line.
+	if systemLocale != nil {
+		if lang, ok := normalize(systemLocale()); ok {
 			return lang
 		}
 	}

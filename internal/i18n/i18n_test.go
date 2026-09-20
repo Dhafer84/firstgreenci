@@ -1,7 +1,9 @@
 package i18n_test
 
 import (
+	"runtime"
 	"testing"
+	"time"
 
 	firstgreenci "github.com/Dhafer84/firstgreenci"
 	"github.com/Dhafer84/firstgreenci/internal/i18n"
@@ -92,57 +94,109 @@ func TestResolve(t *testing.T) {
 			return value, ok
 		}
 	}
+	// A system that reports nothing, which is every system but macOS.
+	silent := func() string { return "" }
 
 	tests := []struct {
 		name     string
 		explicit string
 		values   map[string]string
+		system   func() string
 		want     string
 	}{
 		{
 			name:     "the flag wins over everything",
 			explicit: "en",
 			values:   map[string]string{"LANG": "fr_FR.UTF-8"},
+			system:   func() string { return "fr_TN" },
 			want:     "en",
 		},
 		{
 			name:   "the dedicated variable wins over the locale",
 			values: map[string]string{"FIRSTGREENCI_LANG": "fr", "LANG": "en_US.UTF-8"},
+			system: silent,
 			want:   "fr",
 		},
 		{
 			name:   "a POSIX locale is reduced to its language",
 			values: map[string]string{"LANG": "fr_FR.UTF-8"},
+			system: silent,
 			want:   "fr",
 		},
 		{
 			name:   "LC_ALL wins over LANG",
 			values: map[string]string{"LC_ALL": "fr_CA", "LANG": "en_GB"},
+			system: silent,
 			want:   "fr",
 		},
 		{
 			name:   "an unsupported locale falls back to the default",
 			values: map[string]string{"LANG": "de_DE.UTF-8"},
+			system: silent,
 			want:   i18n.DefaultLang,
 		},
 		{
-			name:   "no variable at all, as on Windows, falls back to the default",
+			// The case seen on a real machine: a macOS terminal sets none of
+			// the variables, while the system knows the locale is French.
+			name:   "the system is asked when no variable answers",
 			values: map[string]string{},
+			system: func() string { return "fr_TN" },
+			want:   "fr",
+		},
+		{
+			name:   "the system is not asked when a variable answers",
+			values: map[string]string{"LANG": "en_US.UTF-8"},
+			system: func() string { t.Error("the system was asked although LANG answered"); return "fr" },
+			want:   "en",
+		},
+		{
+			name:   "a system language we do not ship falls back to the default",
+			values: map[string]string{},
+			system: func() string { return "ja_JP" },
+			want:   i18n.DefaultLang,
+		},
+		{
+			name:   "a system that says nothing, as on Windows and Linux",
+			values: map[string]string{},
+			system: silent,
+			want:   i18n.DefaultLang,
+		},
+		{
+			name:   "no system reader at all is safe",
+			values: map[string]string{},
+			system: nil,
 			want:   i18n.DefaultLang,
 		},
 		{
 			name:     "an unsupported flag value does not shadow the environment",
 			explicit: "de",
 			values:   map[string]string{"LANG": "fr_FR.UTF-8"},
+			system:   silent,
 			want:     "fr",
 		},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			if got := i18n.Resolve(test.explicit, env(test.values)); got != test.want {
+			if got := i18n.Resolve(test.explicit, env(test.values), test.system); got != test.want {
 				t.Errorf("Resolve(%q, %v) = %q, want %q", test.explicit, test.values, got, test.want)
 			}
 		})
+	}
+}
+
+// TestSystemLocaleNeverPanics calls the real reader. Its answer depends on
+// the machine, so only its contract is checked: it either names a locale or
+// says nothing, and it never takes long enough to be noticed.
+func TestSystemLocaleNeverPanics(t *testing.T) {
+	start := time.Now()
+	got := i18n.SystemLocale()
+	elapsed := time.Since(start)
+
+	if runtime.GOOS != "darwin" && got != "" {
+		t.Errorf("SystemLocale on %s returned %q, want nothing", runtime.GOOS, got)
+	}
+	if elapsed > 5*time.Second {
+		t.Errorf("SystemLocale took %s, which a user would notice", elapsed)
 	}
 }

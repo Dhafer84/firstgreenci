@@ -65,6 +65,19 @@ type Environment struct {
 	// ConfigPath overrides where the preferences are kept. Tests set it so
 	// that they never read or write the real user's file.
 	ConfigPath string
+
+	// SystemLocale reports the language of the operating system, asked for
+	// only when no environment variable answers. Tests set it so that their
+	// result does not depend on the machine running them.
+	SystemLocale func() string
+}
+
+// systemLocale returns the system language reader to use.
+func (e Environment) systemLocale() func() string {
+	if e.SystemLocale != nil {
+		return e.SystemLocale
+	}
+	return i18n.SystemLocale
 }
 
 // configPath returns the preferences file to use.
@@ -414,7 +427,7 @@ func load(env Environment, explicit string) (*i18n.Catalog, int) {
 		lookup = func(string) (string, bool) { return "", false }
 	}
 
-	catalog, err := i18n.Load(firstgreenci.LocalesFS, i18n.Resolve(explicit, lookup))
+	catalog, err := i18n.Load(firstgreenci.LocalesFS, i18n.Resolve(explicit, lookup, env.systemLocale()))
 	if err != nil {
 		// The catalogs are embedded in the binary: failing here means the
 		// build itself is broken, and no translation is available to say so.

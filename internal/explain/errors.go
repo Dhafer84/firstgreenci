@@ -83,7 +83,16 @@ var rules = []rule{
 		// pytest exits with 5 and says so when it collected nothing. The
 		// pipeline is red, but the code is not at fault.
 		pattern: regexp.MustCompile(`no tests ran in|collected 0 items`),
-		key:     "no_tests",
+		key:     "no_tests_pytest",
+	},
+	{
+		// unittest words the same situation differently, and since Python
+		// 3.12 it exits with 5 as well. The two need separate advice: pytest
+		// collects any test_ function, unittest only takes TestCase
+		// subclasses, so a project whose tests are plain scripts collects
+		// nothing and needs pytest declared rather than files moved.
+		pattern: regexp.MustCompile(`NO TESTS RAN|Ran 0 tests`),
+		key:     "no_tests_unittest",
 	},
 	{
 		pattern:   regexp.MustCompile(`FAILED (\S+)`),

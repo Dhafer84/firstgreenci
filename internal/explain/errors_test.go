@@ -63,10 +63,20 @@ func TestDiagnoseRealFailures(t *testing.T) {
 			wantsKnown: true,
 		},
 		{
-			name:       "no test was found",
+			name:       "pytest found no test",
 			recording:  "notests.json.log",
-			inCause:    "aucun test",
+			inCause:    "pytest n'a trouvé aucun test",
 			inAction:   "tests/",
+			wantsKnown: true,
+		},
+		{
+			// The case a real project hit: tests written as plain scripts,
+			// which unittest collects none of. Telling this user to move
+			// files would be wrong; they need pytest declared.
+			name:       "unittest collected no test",
+			recording:  "no-tests-unittest.json.log",
+			inCause:    "unittest n'a collecté aucun test",
+			inAction:   "unittest.TestCase",
 			wantsKnown: true,
 		},
 		{
@@ -105,7 +115,7 @@ func TestDiagnoseRealFailures(t *testing.T) {
 // being handed more arguments than it has room for: Go would print its own
 // complaint in the middle of a French sentence.
 func TestDiagnoseNeverShowsGoFormattingComplaints(t *testing.T) {
-	recordings := []string{"red.json.log", "missingdep.json.log", "notests.json.log", "docker-unreachable.json.log", "green.json.log"}
+	recordings := []string{"red.json.log", "missingdep.json.log", "notests.json.log", "no-tests-unittest.json.log", "docker-unreachable.json.log", "green.json.log"}
 
 	for _, lang := range i18n.Supported {
 		for _, recording := range recordings {

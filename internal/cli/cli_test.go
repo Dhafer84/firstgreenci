@@ -26,12 +26,13 @@ func run(t *testing.T, input string, interactive bool, args ...string) result {
 
 	var stdout, stderr bytes.Buffer
 	code := cli.Run(cli.Environment{
-		Args:        args,
-		Stdin:       strings.NewReader(input),
-		Stdout:      &stdout,
-		Stderr:      &stderr,
-		LookupEnv:   func(string) (string, bool) { return "", false },
-		Interactive: interactive,
+		Args:         args,
+		Stdin:        strings.NewReader(input),
+		Stdout:       &stdout,
+		Stderr:       &stderr,
+		LookupEnv:    func(string) (string, bool) { return "", false },
+		SystemLocale: func() string { return "" },
+		Interactive:  interactive,
 	})
 	return result{code: code, stdout: stdout.String(), stderr: stderr.String()}
 }
@@ -390,6 +391,7 @@ func TestTopLevelCommands(t *testing.T) {
 					}
 					return "", false
 				},
+				SystemLocale: func() string { return "" },
 			})
 
 			if code != test.code {
