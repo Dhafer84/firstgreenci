@@ -1,0 +1,39 @@
+# ==============================================================================
+# {{ t "workflow.header.title" }}
+#
+# {{ t "workflow.header.editable" }}
+# {{ t "workflow.header.generated" }}
+# ==============================================================================
+
+name: {{ q (t "workflow.name") }}
+
+# {{ t "workflow.on.comment" }}
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    # {{ t "workflow.runs_on.comment" }}
+    runs-on: ubuntu-latest
+
+    steps:
+      # {{ t "workflow.step.checkout.comment" }}
+      - name: {{ q (t "workflow.step.checkout.name") }}
+        uses: actions/checkout@v4
+
+      # {{ t "workflow.step.setup_node.comment" }}
+      - name: {{ q (t "workflow.step.setup_node.name") }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: {{ q .RuntimeVersion }}
+
+      # {{ t "workflow.step.install.comment" }}
+      - name: {{ q (t "workflow.step.install.name") }}
+        run: |
+{{ indent .InstallCommand 10 }}
+
+      # {{ t "workflow.step.test.comment" }}
+      - name: {{ q (t "workflow.step.test.name") }}
+        run: |
+{{ indent .TestCommand 10 }}

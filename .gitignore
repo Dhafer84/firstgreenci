@@ -1,0 +1,30 @@
+# Documentation is kept out of the repository on purpose.
+# README.md is the single exception: it is the project's public front page.
+CLAUDE.md
+*.md
+!README.md
+docs/
+*.docx
+*.doc
+*.pdf
+
+# Sample projects carry their own documentation files, which the detection
+# tests read. They must stay versioned.
+!testdata/**/*.md
+
+# Compiled binaries
+/firstgreenci
+/dist/
+*.exe
+
+# Go workspace and tooling
+/vendor/
+*.test
+*.out
+go.work
+go.work.sum
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/

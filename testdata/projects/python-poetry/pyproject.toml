@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "demo"
+version = "0.1.0"
+description = "A small project managed with Poetry"
+authors = ["Demo <demo@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.2.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

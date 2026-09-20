@@ -1,0 +1,51 @@
+# ==============================================================================
+# Checks for FirstGreen CI itself.
+#
+# The tool promises to work on macOS, Linux and Windows, so it is built and
+# tested on the three of them: path handling is the kind of thing that only
+# breaks on the system nobody tried.
+# ==============================================================================
+
+name: Checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Check the formatting
+        # gofmt -l lists the files that are not formatted; the run fails when
+        # the list is not empty.
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "These files are not formatted:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Build
+        run: go build ./...
+
+      - name: Examine the code
+        run: go vet ./...
+
+      - name: Run the tests
+        run: go test ./...

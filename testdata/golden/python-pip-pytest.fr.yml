@@ -1,0 +1,40 @@
+# ==============================================================================
+# Ce fichier décrit les vérifications lancées automatiquement à chaque modification du code.
+#
+# Vous pouvez le modifier librement : il fonctionne sans FirstGreen CI.
+# Créé par FirstGreen CI — https://github.com/Dhafer84/firstgreenci
+# ==============================================================================
+
+name: "Vérification automatique"
+
+# Quand lancer ces vérifications : à chaque envoi de code, et à chaque proposition de modification.
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    # La machine qui exécute les vérifications, fournie par GitHub.
+    runs-on: ubuntu-latest
+
+    steps:
+      # Copie votre projet sur la machine qui exécute les vérifications.
+      - name: "Récupérer le code"
+        uses: actions/checkout@v4
+
+      # Installe la même version de Python que celle de votre ordinateur.
+      - name: "Installer Python"
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Installe les bibliothèques dont votre projet a besoin.
+      - name: "Installer les dépendances"
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      # Exécute vos tests. Si l'un d'eux échoue, la vérification passe au rouge.
+      - name: "Lancer les tests"
+        run: |
+          pytest

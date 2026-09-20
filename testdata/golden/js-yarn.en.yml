@@ -1,0 +1,40 @@
+# ==============================================================================
+# This file describes the checks that run automatically whenever the code changes.
+#
+# You can change it freely: it works without FirstGreen CI.
+# Created by FirstGreen CI — https://github.com/Dhafer84/firstgreenci
+# ==============================================================================
+
+name: "Automated checks"
+
+# When to run these checks: on every push, and on every proposed change.
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    # The machine that runs the checks, provided by GitHub.
+    runs-on: ubuntu-latest
+
+    steps:
+      # Copies your project onto the machine that runs the checks.
+      - name: "Get the code"
+        uses: actions/checkout@v4
+
+      # Installs the same version of Node.js as the one on your computer.
+      - name: "Install Node.js"
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      # Installs the libraries your project needs.
+      - name: "Install the dependencies"
+        run: |
+          corepack enable
+          yarn install --frozen-lockfile
+
+      # Runs your tests. If one of them fails, the check turns red.
+      - name: "Run the tests"
+        run: |
+          yarn test
