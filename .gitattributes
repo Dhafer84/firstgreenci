@@ -1,0 +1,12 @@
+# Line endings are normalised to LF everywhere, on every system.
+#
+# Git for Windows converts text files to CRLF on checkout by default. The
+# pipeline templates are embedded in the binary at build time, so a CRLF
+# checkout would produce a workflow whose lines end with CRLF from the
+# template but with LF inside the multi-line run blocks, which come from Go
+# source. The user would be handed a file with mixed line endings, and the
+# reference tests in testdata/golden would fail on Windows only.
+#
+# Keeping everything LF also keeps the recorded act runs in testdata/act
+# byte for byte as they were recorded.
+* text=auto eol=lf
