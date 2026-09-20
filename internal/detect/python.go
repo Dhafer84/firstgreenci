@@ -37,6 +37,15 @@ func detectPython(root string) (*Project, error) {
 		project.InstallCommand = "python -m pip install --upgrade pip\npython -m pip install -r requirements.txt"
 		project.addEvidence("requirements.txt", "detect.evidence.requirements_txt")
 
+		// Whatever the detection reads, the pipeline must install. Reading
+		// requirements-dev.txt to conclude that a project uses pytest, then
+		// installing only requirements.txt, produced a workflow that failed
+		// on "pytest: command not found".
+		if fileExists(root, devRequirements) {
+			project.InstallCommand += "\npython -m pip install -r " + devRequirements
+			project.addEvidence(devRequirements, "detect.evidence.requirements_dev")
+		}
+
 	case pyproject != "":
 		project.PackageManager = "pip"
 		project.Manifest = "pyproject.toml"
@@ -71,21 +80,29 @@ func pythonTestCommand(root string, project *Project) (tool, command string) {
 		prefix = "pipenv run "
 	}
 
-	if declaresPytest(root) {
+	if pytestDeclaredIn(root) != "" {
 		return "pytest", prefix + "pytest"
 	}
 	return "unittest", prefix + "python -m unittest discover"
 }
 
-// declaresPytest reports whether pytest appears in any of the files where a
-// Python project declares its dependencies.
-func declaresPytest(root string) bool {
-	for _, name := range []string{"requirements.txt", "requirements-dev.txt", "pyproject.toml", "Pipfile", "setup.py", "setup.cfg", "tox.ini"} {
+// devRequirements is the one file for development-only dependencies the
+// tool knows. Other names exist in the wild (dev-requirements.txt,
+// requirements-test.txt); none has been met yet, and a name added from
+// memory is a guess.
+const devRequirements = "requirements-dev.txt"
+
+// pytestDeclaredIn returns the file that declares pytest, or an empty string
+// when none does. Returning the file rather than a yes or no lets the report
+// name where it was seen: saying "requirements.txt: pytest is listed there"
+// when it sits in requirements-dev.txt sends the reader to the wrong place.
+func pytestDeclaredIn(root string) string {
+	for _, name := range []string{"requirements.txt", devRequirements, "pyproject.toml", "Pipfile", "setup.py", "setup.cfg", "tox.ini"} {
 		if strings.Contains(readFile(root, name), "pytest") {
-			return true
+			return name
 		}
 	}
-	return false
+	return ""
 }
 
 // pythonVersion reads the version the project pins, and falls back to a
@@ -111,8 +128,8 @@ func pythonVersion(root string) string {
 
 // addTestEvidence records where the tests were found, when they can be seen.
 func (p *Project) addTestEvidence(root string) {
-	if declaresPytest(root) {
-		p.addEvidence(p.Manifest, "detect.evidence.pytest_dependency")
+	if declaring := pytestDeclaredIn(root); declaring != "" {
+		p.addEvidence(declaring, "detect.evidence.pytest_dependency")
 	}
 
 	if dirExists(root, "tests") {

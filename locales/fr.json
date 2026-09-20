@@ -27,6 +27,7 @@
   "detect.evidence.pyproject": "%s : la liste des dépendances Python du projet.",
   "detect.evidence.pyproject_poetry": "%s : les dépendances sont gérées avec Poetry.",
   "detect.evidence.pytest_dependency": "%s : pytest y est listé, c'est donc l'outil de test du projet.",
+  "detect.evidence.requirements_dev": "%s : les dépendances de développement, que le pipeline installe aussi.",
   "detect.evidence.requirements_txt": "%s : la liste des dépendances Python du projet.",
   "detect.evidence.script_test": "%s : la commande de test y est déjà écrite (« %s »).",
   "detect.evidence.setup_py": "%s : un projet Python installable.",
@@ -83,6 +84,8 @@
   "language.javascript": "JavaScript",
   "language.python": "Python",
 
+  "pipeline.error.command_not_found.action": "Déclarez « %s » dans vos dépendances — requirements.txt, ou requirements-dev.txt pour ce qui ne doit pas partir en production — puis relancez :\n  firstgreenci init --force && firstgreenci run",
+  "pipeline.error.command_not_found.cause": "La commande « %s » n'existe pas dans le pipeline.",
   "pipeline.error.disk_full.action": "Libérez de la place, par exemple en supprimant ce que Docker garde en réserve :\n  docker system prune",
   "pipeline.error.disk_full.cause": "Il n'y a plus de place sur le disque.",
   "pipeline.error.docker.action": "Vérifiez que Docker est bien démarré : firstgreenci doctor",

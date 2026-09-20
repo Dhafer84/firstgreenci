@@ -55,6 +55,16 @@ var rules = []rule{
 		key:     "image_pull",
 	},
 	{
+		// Observed as: "/var/run/act/workflow/3: line 2: pytest: command not
+		// found", with exit status 127. It happens whenever a tool the
+		// pipeline runs was never installed — pytest, but also make, ruff or
+		// mypy.
+		pattern:    regexp.MustCompile(`line \d+: ([^:]+): command not found`),
+		key:        "command_not_found",
+		causeArgs:  1,
+		actionArgs: 1,
+	},
+	{
 		pattern:    regexp.MustCompile(`ModuleNotFoundError: No module named '([^']+)'`),
 		key:        "python_module",
 		causeArgs:  1,

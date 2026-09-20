@@ -80,6 +80,15 @@ func TestDiagnoseRealFailures(t *testing.T) {
 			wantsKnown: true,
 		},
 		{
+			// Recorded on a clean act cache: a tool the pipeline runs was
+			// never installed.
+			name:       "a command is missing from the pipeline",
+			recording:  "command-not-found.json.log",
+			inCause:    "pytest",
+			inAction:   "requirements-dev.txt",
+			wantsKnown: true,
+		},
+		{
 			name:       "docker went away",
 			recording:  "docker-unreachable.json.log",
 			inCause:    "Docker",
@@ -115,7 +124,7 @@ func TestDiagnoseRealFailures(t *testing.T) {
 // being handed more arguments than it has room for: Go would print its own
 // complaint in the middle of a French sentence.
 func TestDiagnoseNeverShowsGoFormattingComplaints(t *testing.T) {
-	recordings := []string{"red.json.log", "missingdep.json.log", "notests.json.log", "no-tests-unittest.json.log", "docker-unreachable.json.log", "green.json.log"}
+	recordings := []string{"red.json.log", "missingdep.json.log", "notests.json.log", "no-tests-unittest.json.log", "command-not-found.json.log", "docker-unreachable.json.log", "green.json.log"}
 
 	for _, lang := range i18n.Supported {
 		for _, recording := range recordings {

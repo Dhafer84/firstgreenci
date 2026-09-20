@@ -40,6 +40,20 @@ func TestDetect(t *testing.T) {
 			manifest:       "requirements.txt",
 		},
 		{
+			// What the detection reads, the pipeline must install: pytest
+			// lives only in the development file here, so that file has to
+			// be installed too.
+			name:           "pytest declared in the development file",
+			project:        "python-requirements-dev",
+			language:       detect.Python,
+			packageManager: "pip",
+			runtimeVersion: "3.12",
+			installCommand: "python -m pip install --upgrade pip\npython -m pip install -r requirements.txt\npython -m pip install -r requirements-dev.txt",
+			testCommand:    "pytest",
+			testTool:       "pytest",
+			manifest:       "requirements.txt",
+		},
+		{
 			name:           "poetry pins the version in pyproject",
 			project:        "python-poetry",
 			language:       detect.Python,
@@ -272,7 +286,8 @@ func TestParseLanguage(t *testing.T) {
 func TestEvidenceKeysAreTranslated(t *testing.T) {
 	projects := []string{
 		"python-pip-pytest", "python-poetry", "python-unittest", "python-pyproject",
-		"python-pipenv", "python-root-tests", "js-npm", "js-yarn", "js-pnpm", "js-no-lockfile",
+		"python-pipenv", "python-root-tests", "python-requirements-dev",
+		"js-npm", "js-yarn", "js-pnpm", "js-no-lockfile",
 	}
 
 	for _, lang := range i18n.Supported {
@@ -292,5 +307,26 @@ func TestEvidenceKeysAreTranslated(t *testing.T) {
 				}
 			}
 		}
+	}
+}
+
+// TestEvidenceNamesTheFileThatDeclaresPytest guards a message that sent the
+// reader to the wrong file: it named the manifest, even when pytest sat in
+// the development file.
+func TestEvidenceNamesTheFileThatDeclaresPytest(t *testing.T) {
+	project, err := detect.Detect(projectPath("python-requirements-dev"))
+	if err != nil {
+		t.Fatalf("Detect: %v", err)
+	}
+
+	var named string
+	for _, evidence := range project.Evidence {
+		if evidence.MessageKey == "detect.evidence.pytest_dependency" {
+			named = evidence.File
+		}
+	}
+
+	if named != "requirements-dev.txt" {
+		t.Errorf("the pytest evidence names %q, want %q", named, "requirements-dev.txt")
 	}
 }

@@ -137,6 +137,7 @@ La réponse est retenue dans un petit fichier JSON, dans le dossier de configura
 | Langage | Gestionnaire | Reconnu grâce à | Tests |
 | --- | --- | --- | --- |
 | Python | pip | `requirements.txt`, `pyproject.toml`, `setup.py` | `pytest` s'il est déclaré, sinon `unittest` |
+| Python | pip | `requirements-dev.txt`, s'il existe | installé aussi, pour garder la production sans outils de test |
 | Python | Poetry | `[tool.poetry]` dans `pyproject.toml` | `poetry run pytest` |
 | Python | Pipenv | `Pipfile` | `pipenv run pytest` |
 | JavaScript | npm | `package-lock.json` | la commande `test` de `package.json` |
@@ -159,6 +160,7 @@ L'exécution locale ne peut pas être identique à celle de GitHub. Les écarts 
 
 - **Architecture du processeur.** Sur un Mac Apple Silicon, le conteneur tourne en arm64, alors que GitHub exécute en amd64. C'est beaucoup plus rapide, mais un paquet qui n'existe qu'en amd64 se comportera différemment.
 - **Image du conteneur.** `catthehacker/ubuntu` n'est pas l'image de GitHub. Des outils présents chez GitHub peuvent y manquer.
+- **Cache partagé entre vos projets.** act garde un volume Docker `act-toolcache` réutilisé par toutes vos exécutions locales : un paquet installé par un projet reste disponible pour les suivants. **Un pipeline peut donc être vert chez vous et rouge sur GitHub**, qui repart d'une machine neuve à chaque fois. Pour vérifier sans filet : `docker volume rm act-toolcache` avant de relancer.
 - **Cache, services et matrices** ne sont pas reproduits à l'identique par act.
 - **Une question au premier lancement.** L'outil évite les questions, mais le choix de l'image engage plus d'un gigaoctet de téléchargement : il ne se devine pas.
 - **Choix de la langue.** `LANG` et `LC_ALL` font foi quand elles existent, et elles sont presque toujours définies dans un terminal — y compris sur un Mac réglé en français, où macOS peut composer une valeur anglaise si votre région n'a pas de locale française. **En l'absence de ces variables seulement**, l'outil lit la langue d'interface de macOS. Sous Windows il ne la lit pas, car cela coûterait un démarrage de PowerShell à chaque commande. Dans tous les cas, `--lang fr` ou `FIRSTGREENCI_LANG=fr` tranche.
@@ -319,6 +321,7 @@ Options for `run`: `--lang fr|en`, `--verbose`, `--image <reference>`.
 
 - **Processor architecture.** On an Apple Silicon Mac the container runs on arm64, while GitHub runs amd64. Much faster, but a package that only exists for amd64 will behave differently.
 - **Container image.** `catthehacker/ubuntu` is not GitHub's image; tools present on GitHub may be missing.
+- **A cache shared between your projects.** act keeps a Docker volume named `act-toolcache` and reuses it for every local run: a package installed by one project stays available to the next. **A pipeline can therefore be green on your machine and red on GitHub**, which starts from a fresh runner every time. To check without a safety net: `docker volume rm act-toolcache` before running again.
 - **Cache, services and matrices** are not reproduced exactly by act.
 - **One question on the first run.** The tool avoids questions, but choosing the image commits more than a gigabyte of download, and cannot be guessed for you.
 - **Choosing the language.** `LANG` and `LC_ALL` decide when they exist, and a terminal almost always sets them — including on a Mac set to French, where macOS may compose an English value if your region has no French locale. **Only when those variables are absent** does the tool read the macOS interface language. On Windows it does not, because that would cost a PowerShell start on every command. Either way, `--lang fr` or `FIRSTGREENCI_LANG=fr` settles it.
