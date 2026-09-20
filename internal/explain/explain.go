@@ -83,3 +83,14 @@ func LanguageName(catalog *i18n.Catalog, language detect.Language) string {
 func Summary(catalog *i18n.Catalog, project *detect.Project) string {
 	return catalog.T("detect.summary", LanguageName(catalog, project.Language), project.TestTool, project.Manifest)
 }
+
+// Warnings renders, in the user's language, what the detection saw coming.
+// They are shown before the pipeline is written, so that nobody waits three
+// minutes for a red result that was predictable from the start.
+func Warnings(catalog *i18n.Catalog, project *detect.Project) []string {
+	messages := make([]string, 0, len(project.Warnings))
+	for _, warning := range project.Warnings {
+		messages = append(messages, catalog.T(warning.MessageKey, warning.Args...))
+	}
+	return messages
+}

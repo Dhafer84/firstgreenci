@@ -330,3 +330,55 @@ func TestEvidenceNamesTheFileThatDeclaresPytest(t *testing.T) {
 		t.Errorf("the pytest evidence names %q, want %q", named, "requirements-dev.txt")
 	}
 }
+
+// TestWarningAppearsOnlyWhereItMust is the guard against a warning that cries
+// wolf. It runs over every Python sample: the one whose tests unittest cannot
+// collect must be flagged, and none of the others.
+func TestWarningAppearsOnlyWhereItMust(t *testing.T) {
+	tests := []struct {
+		project string
+		want    bool
+		because string
+	}{
+		{project: "python-script-tests", want: true, because: "test_ functions, no TestCase, no tool declared"},
+		{project: "python-unittest", want: false, because: "a real unittest.TestCase class, which unittest collects"},
+		{project: "python-pip-pytest", want: false, because: "pytest is declared"},
+		{project: "python-requirements-dev", want: false, because: "pytest is declared in the development file"},
+		{project: "python-poetry", want: false, because: "pytest is declared"},
+		{project: "python-pipenv", want: false, because: "pytest is declared"},
+		{project: "python-root-tests", want: false, because: "pytest is declared"},
+		{project: "python-pyproject", want: false, because: "there is no test file at all"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.project, func(t *testing.T) {
+			project, err := detect.Detect(projectPath(test.project))
+			if err != nil {
+				t.Fatalf("Detect: %v", err)
+			}
+
+			got := len(project.Warnings) > 0
+			if got != test.want {
+				t.Errorf("warning = %v, want %v — %s", got, test.want, test.because)
+			}
+		})
+	}
+}
+
+// TestWarningCountsDeclarationsNotMentions pins down the mistake that the
+// sample project was built to catch: its docstring says it is written
+// "without unittest.TestCase", and a plain substring search read that as a
+// TestCase class.
+func TestWarningCountsDeclarationsNotMentions(t *testing.T) {
+	project, err := detect.Detect(projectPath("python-script-tests"))
+	if err != nil {
+		t.Fatalf("Detect: %v", err)
+	}
+
+	if len(project.Warnings) != 1 {
+		t.Fatalf("%d warnings, want 1 — the docstring mention was counted as a class", len(project.Warnings))
+	}
+	if key := project.Warnings[0].MessageKey; key != "detect.warning.no_test_tool" {
+		t.Errorf("warning key = %q, want %q", key, "detect.warning.no_test_tool")
+	}
+}

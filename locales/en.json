@@ -34,6 +34,7 @@
   "detect.evidence.test_files": "%s: test files were found there.",
   "detect.evidence.tests_dir": "%s: the folder that holds the tests.",
   "detect.summary": "Project detected: %s (%s, %s)",
+  "detect.warning.no_test_tool": "Your tests will not be found by unittest.\n\n  Test files                : %d\n  \"test_\" functions         : %d\n  unittest.TestCase classes : 0\n  Test tool declared        : none\n\nunittest only collects unittest.TestCase classes: your pipeline will be red.\n\nAdd \"pytest\" to your dependencies — requirements.txt, or requirements-dev.txt to keep it out of production — then run again:\n  firstgreenci init --force",
 
   "doctor.act.label": "act",
   "doctor.act.not_installed": "is not installed",

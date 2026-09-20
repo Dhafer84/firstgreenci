@@ -215,6 +215,7 @@ func runInit(env Environment, args []string) int {
 
 	fmt.Fprintln(env.Stdout, explain.Summary(catalog, project))
 	printEvidence(env, catalog, project)
+	printWarnings(env, catalog, project)
 
 	if *dryRun {
 		fmt.Fprintln(env.Stdout)
@@ -407,6 +408,25 @@ func printEvidence(env Environment, catalog *i18n.Catalog, project *detect.Proje
 	fmt.Fprintln(env.Stdout, catalog.T("detect.evidence.header"))
 	for _, line := range lines {
 		fmt.Fprintf(env.Stdout, "  - %s\n", line)
+	}
+}
+
+// printWarnings shows what the detection saw coming, before the file is
+// written. Telling someone their pipeline will be red is worth interrupting
+// for; letting them find out after a three-minute run is not.
+func printWarnings(env Environment, catalog *i18n.Catalog, project *detect.Project) {
+	for _, warning := range explain.Warnings(catalog, project) {
+		fmt.Fprintln(env.Stdout)
+		for i, line := range strings.Split(warning, "\n") {
+			switch {
+			case i == 0:
+				fmt.Fprintf(env.Stdout, "%s  %s\n", markWarning, line)
+			case line == "":
+				fmt.Fprintln(env.Stdout)
+			default:
+				fmt.Fprintf(env.Stdout, "   %s\n", line)
+			}
+		}
 	}
 }
 

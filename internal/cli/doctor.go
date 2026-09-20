@@ -17,6 +17,9 @@ const (
 	markOK      = "✓"
 	markProblem = "✗"
 	markNote    = "·"
+	// A warning is not a failure: the command succeeds, but something will
+	// go wrong later if nothing is done.
+	markWarning = "⚠"
 )
 
 // labelWidth lines the statuses up under one another.

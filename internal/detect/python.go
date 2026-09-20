@@ -1,7 +1,9 @@
 package detect
 
 import (
+	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -64,6 +66,7 @@ func detectPython(root string) (*Project, error) {
 
 	project.TestTool, project.TestCommand = pythonTestCommand(root, project)
 	project.addTestEvidence(root)
+	project.warnAboutUncollectableTests(root)
 
 	return project, nil
 }
@@ -141,6 +144,73 @@ func (p *Project) addTestEvidence(root string) {
 	if err == nil && len(matches) > 0 {
 		p.addEvidence(filepath.Base(root), "detect.evidence.test_files")
 	}
+}
+
+// Counting mentions of a name is not counting declarations. A file whose
+// docstring says "written without unittest.TestCase" holds no TestCase at
+// all, and a plain substring search reads it as one — which it did, on the
+// very fixture written to exercise this code. Both patterns match
+// declarations, anchored to the start of a line.
+var (
+	testFunctionPattern = regexp.MustCompile(`(?m)^[ \t]*def[ \t]+test_\w*[ \t]*\(`)
+	testCasePattern     = regexp.MustCompile(`(?m)^[ \t]*class[ \t]+\w+[ \t]*\([^)]*TestCase[^)]*\)`)
+)
+
+// testShape is what the test files themselves show, as opposed to what the
+// dependency files declare.
+type testShape struct {
+	files     int
+	functions int
+	testCases int
+}
+
+// inspectTests counts what matters in the test files: how many there are,
+// how many test functions they hold, and how many unittest.TestCase classes.
+//
+// The detection reads dependency declarations to decide which command to
+// generate. It reads the tests themselves only to advise, never to decide.
+func inspectTests(root string) testShape {
+	paths, _ := filepath.Glob(filepath.Join(root, "tests", "test_*.py"))
+	atRoot, _ := filepath.Glob(filepath.Join(root, "test_*.py"))
+	paths = append(paths, atRoot...)
+
+	shape := testShape{files: len(paths)}
+	for _, path := range paths {
+		content, err := os.ReadFile(path)
+		if err != nil {
+			continue
+		}
+		shape.functions += len(testFunctionPattern.FindAllIndex(content, -1))
+		shape.testCases += len(testCasePattern.FindAllIndex(content, -1))
+	}
+	return shape
+}
+
+// warnAboutUncollectableTests says, before anything runs, that the generated
+// pipeline will find no test at all.
+//
+// unittest only collects classes deriving from unittest.TestCase. A project
+// whose tests are plain test_ functions, with no test tool declared, gets a
+// pipeline that runs to the end and collects nothing — a red result, after
+// minutes of waiting, for someone who did nothing wrong. It was met on a
+// real project: 19 files, 406 functions, no TestCase.
+//
+// The condition is deliberately narrow: no existing sample project triggers
+// it, including the one that uses unittest properly.
+func (p *Project) warnAboutUncollectableTests(root string) {
+	if pytestDeclaredIn(root) != "" {
+		return
+	}
+
+	shape := inspectTests(root)
+	if shape.files == 0 || shape.functions == 0 || shape.testCases > 0 {
+		return
+	}
+
+	p.Warnings = append(p.Warnings, Warning{
+		MessageKey: "detect.warning.no_test_tool",
+		Args:       []any{shape.files, shape.functions},
+	})
 }
 
 // addEvidence appends one observed fact to the project.

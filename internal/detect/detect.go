@@ -43,6 +43,14 @@ type Evidence struct {
 	Args []any
 }
 
+// Warning is something worth telling the user before the pipeline runs,
+// rather than letting a red run reveal it. Like Evidence, it carries a
+// translation key and never text.
+type Warning struct {
+	MessageKey string
+	Args       []any
+}
+
 // Project is everything the generator needs to write a workflow.
 type Project struct {
 	Root           string
@@ -58,6 +66,11 @@ type Project struct {
 	Manifest string
 
 	Evidence []Evidence
+
+	// Warnings are the problems the detection can see coming. They never
+	// change the commands above: the tool reports what it found, it does not
+	// decide to install something the user never declared.
+	Warnings []Warning
 }
 
 // NotRecognisedError reports that no supported project was found.

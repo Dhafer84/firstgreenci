@@ -146,6 +146,19 @@ La réponse est retenue dans un petit fichier JSON, dans le dossier de configura
 
 La version du langage est lue dans `.python-version`, `requires-python`, `.nvmrc` ou `engines.node`. À défaut, Python 3.12 et Node.js 20.
 
+### Il vous prévient avant de vous faire attendre
+
+Si vos tests ne pourront pas être collectés par l'outil détecté, `init` le dit **immédiatement**, chiffres à l'appui, au lieu de vous laisser découvrir un pipeline rouge après plusieurs minutes d'exécution :
+
+```
+⚠  Vos tests ne seront pas trouvés par unittest.
+
+     Fichiers de test          : 19
+     Fonctions « test_ »       : 406
+     Classes unittest.TestCase : 0
+     Outil de test déclaré     : aucun
+```
+
 ### Vos fichiers vous appartiennent
 
 - Un fichier existant n'est **jamais** remplacé sans votre accord explicite.
@@ -308,6 +321,19 @@ Options for `run`: `--lang fr|en`, `--verbose`, `--image <reference>`.
 ### On the first run
 
 `run` asks once which container image to run your pipeline in: faithful to GitHub (~1.2 GB, Python and Node preinstalled) or light (~200 MB, no Python). The answer is remembered in a small JSON file in your system's configuration folder. `--image` overrides it for one run. No secret is ever written there.
+
+### It warns you before making you wait
+
+If your tests cannot be collected by the tool that was detected, `init` says so **straight away**, with the numbers, instead of letting you find a red pipeline after minutes of running:
+
+```
+⚠  Your tests will not be found by unittest.
+
+     Test files                : 19
+     "test_" functions         : 406
+     unittest.TestCase classes : 0
+     Test tool declared        : none
+```
 
 ### Your files stay yours
 
