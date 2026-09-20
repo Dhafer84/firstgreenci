@@ -1,0 +1,60 @@
+# ==============================================================================
+# Proves that the Scoop installation actually works, on a real Windows.
+#
+# The manifest is generated on macOS or Linux, where nobody can try it. A
+# manifest that looks right proves nothing, so this installs the tool the way
+# a Windows user would and checks that it runs.
+#
+# It starts by itself after every successful release, and can be run by hand
+# from the Actions tab.
+# ==============================================================================
+
+name: Verify Scoop
+
+on:
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  install:
+    # After a release, only worth running when that release succeeded.
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Install Scoop
+        run: |
+          # The official installer. Running a remote script is acceptable
+          # here because this machine is destroyed with the job; it is not
+          # what the README tells a user to do.
+          Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+          Invoke-RestMethod get.scoop.sh | Invoke-Expression
+
+      - name: Put the Scoop shims on the PATH
+        run: |
+          # Scoop adds its shims to the PATH of the session that installed it.
+          # Later steps run in new sessions, which would not see them.
+          "$env:USERPROFILE\scoop\shims" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Add the bucket and install
+        run: |
+          scoop bucket add firstgreenci https://github.com/Dhafer84/homebrew-tap
+          scoop install firstgreenci
+
+      - name: Check that it runs
+        run: |
+          # If Windows were to block the unsigned executable, it would show
+          # up right here.
+          firstgreenci version
+          firstgreenci help
+
+      - name: Check that act came along
+        run: |
+          # act is declared as a dependency of the manifest, so Scoop should
+          # have installed it without being asked.
+          act --version

@@ -121,6 +121,32 @@ homebrew_casks:
         https://www.docker.com/products/docker-desktop/
       Check that everything is ready:  firstgreenci doctor
 
+# Installation through Scoop, on Windows.
+#
+# The manifest goes into the very repository that holds the Homebrew cask.
+# The name of that repository says "homebrew", which is odd for a Windows
+# user, but it means no second repository and no second token: the one in
+# place already writes there. The README warns about the name.
+scoops:
+  - name: firstgreenci
+    repository:
+      owner: Dhafer84
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_TOKEN }}"
+    directory: bucket
+    homepage: https://github.com/Dhafer84/firstgreenci
+    description: Takes your project to its first green CI pipeline, without writing any YAML
+    license: MIT
+    # Same guard as the cask: with no token the manifest is skipped and the
+    # binaries are published all the same.
+    skip_upload: '{{ if .Env.HOMEBREW_TAP_TOKEN }}false{{ else }}true{{ end }}'
+    depends:
+      # act lives in Scoop's main bucket, which is added by default, so this
+      # resolves without the user adding anything. Checked against
+      # ScoopInstaller/Main before relying on it.
+      - act
+
 release:
   draft: false
   prerelease: false

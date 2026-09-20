@@ -46,7 +46,16 @@ brew install Dhafer84/tap/firstgreenci
 
 `act` est installé en même temps ; il ne vous restera que Docker. Lancez ensuite `firstgreenci doctor`, qui vérifie tout et explique ce qui manque.
 
-**Partout ailleurs, ou sans Homebrew** — prenez le fichier qui correspond à votre machine sur la [page des versions](https://github.com/Dhafer84/firstgreenci/releases/latest) :
+**Sur Windows, avec Scoop** :
+
+```powershell
+scoop bucket add firstgreenci https://github.com/Dhafer84/homebrew-tap
+scoop install firstgreenci
+```
+
+`act` est installé en même temps, là aussi. Le nom du dépôt parle de Homebrew : c'est normal, il héberge les recettes des deux systèmes.
+
+**Sur Linux, ou sans gestionnaire de paquets** — prenez le fichier qui correspond à votre machine sur la [page des versions](https://github.com/Dhafer84/firstgreenci/releases/latest) :
 
 | Votre machine | Fichier à prendre |
 | --- | --- |
@@ -70,7 +79,7 @@ Pourquoi `curl` ? Parce qu'un fichier téléchargé par le navigateur est mis en
 xattr -d com.apple.quarantine firstgreenci
 ```
 
-**Windows.** Décompressez le `.zip`, puis placez `firstgreenci.exe` dans un dossier de votre `PATH`. SmartScreen peut avertir à la première exécution : les exécutables ne sont pas signés, faute de certificat.
+**Windows, sans Scoop.** Décompressez le `.zip`, puis placez `firstgreenci.exe` dans un dossier de votre `PATH`. SmartScreen peut avertir à la première exécution : les exécutables ne sont pas signés, faute de certificat.
 
 **Vérifier ce que vous avez téléchargé.** Chaque version est accompagnée d'un `checksums.txt` :
 
@@ -204,7 +213,16 @@ brew install Dhafer84/tap/firstgreenci
 
 `act` is installed along with it; only Docker is left to get. Then run `firstgreenci doctor`, which checks everything and explains what is missing.
 
-**Anywhere else, or without Homebrew** — take the file matching your machine from the [releases page](https://github.com/Dhafer84/firstgreenci/releases/latest):
+**On Windows, with Scoop**:
+
+```powershell
+scoop bucket add firstgreenci https://github.com/Dhafer84/homebrew-tap
+scoop install firstgreenci
+```
+
+`act` is installed along with it here too. The repository name says Homebrew: that is expected, it holds the recipes for both systems.
+
+**On Linux, or without a package manager** — take the file matching your machine from the [releases page](https://github.com/Dhafer84/firstgreenci/releases/latest):
 
 | Your machine | File to take |
 | --- | --- |
@@ -228,7 +246,7 @@ Why `curl`? Because a browser-downloaded file is quarantined by macOS and refuse
 xattr -d com.apple.quarantine firstgreenci
 ```
 
-**Windows.** Unzip, then put `firstgreenci.exe` in a folder on your `PATH`. SmartScreen may warn on first run: the executables are not signed, for want of a certificate.
+**Windows, without Scoop.** Unzip, then put `firstgreenci.exe` in a folder on your `PATH`. SmartScreen may warn on first run: the executables are not signed, for want of a certificate.
 
 **Check what you downloaded.** Every release ships a `checksums.txt`:
 
