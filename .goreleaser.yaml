@@ -1,0 +1,105 @@
+# How a release of FirstGreen CI is built and published.
+#
+# Triggered by pushing a tag: see .github/workflows/release.yml.
+# Everything here can be exercised locally, without publishing anything:
+#
+#   goreleaser check
+#   goreleaser release --snapshot --clean
+
+version: 2
+
+project_name: firstgreenci
+
+before:
+  hooks:
+    # Never publish something that does not pass its own tests.
+    - go test ./...
+
+builds:
+  - id: firstgreenci
+    main: ./cmd/firstgreenci
+    binary: firstgreenci
+    env:
+      # The tool uses nothing but the standard library, so the binaries are
+      # static and depend on no system library.
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      # -s -w drop the debug tables, which halves the size. The -X flag is
+      # what puts the released version into the binary; a hand-built one
+      # keeps reporting "dev".
+      - -s -w -X github.com/Dhafer84/firstgreenci/internal/cli.Version={{ .Version }}
+
+archives:
+  - id: firstgreenci
+    formats: [tar.gz]
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    # The names say what a person would say. "darwin" and "amd64" mean
+    # nothing to the beginners this tool is for, and design principle 1 asks
+    # for no unexplained jargon in what they read.
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_
+      {{- if eq .Os "darwin" }}macOS
+      {{- else if eq .Os "windows" }}Windows
+      {{- else }}Linux{{ end }}_
+      {{- if and (eq .Os "darwin") (eq .Arch "arm64") }}AppleSilicon
+      {{- else if and (eq .Os "darwin") (eq .Arch "amd64") }}Intel
+      {{- else if eq .Arch "arm64" }}ARM64
+      {{- else }}x86-64{{ end }}
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+  algorithm: sha256
+
+changelog:
+  use: github
+  sort: asc
+  filters:
+    exclude:
+      - "^Merge "
+
+release:
+  draft: false
+  prerelease: false
+  footer: |
+    ## Installation
+
+    Téléchargez le fichier correspondant à votre machine, puis placez
+    `firstgreenci` dans un dossier de votre `PATH`.
+
+    **macOS** — téléchargez avec `curl` plutôt qu'avec le navigateur : un
+    fichier téléchargé par le navigateur est mis en quarantaine par macOS et
+    refusera de se lancer. Si cela vous arrive :
+    `xattr -d com.apple.quarantine firstgreenci`
+
+    **Windows** — SmartScreen peut avertir à la première exécution : les
+    exécutables ne sont pas signés.
+
+    Vérifiez ce que vous avez téléchargé avec `checksums.txt`.
+
+    ---
+
+    ## Installation (English)
+
+    Download the file matching your machine, then put `firstgreenci` in a
+    folder on your `PATH`.
+
+    **macOS** — download with `curl` rather than the browser: a
+    browser-downloaded file is quarantined by macOS and will refuse to run.
+    If that happens: `xattr -d com.apple.quarantine firstgreenci`
+
+    **Windows** — SmartScreen may warn on first run: the executables are not
+    signed.
+
+    Check what you downloaded against `checksums.txt`.

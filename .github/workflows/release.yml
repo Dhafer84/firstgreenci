@@ -1,0 +1,54 @@
+# ==============================================================================
+# Publishes the downloadable executables.
+#
+# Nothing here runs on an ordinary push. It is triggered by tagging a
+# version:
+#
+#   git tag v0.1.0
+#   git push origin v0.1.0
+#
+# What it builds is described in .goreleaser.yaml, and the whole thing can be
+# rehearsed locally with: goreleaser release --snapshot --clean
+# ==============================================================================
+
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+# Creating the release and attaching its files is the only thing this
+# workflow may do. Nothing else is granted.
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+        with:
+          # The release notes are built from the commit history, so all of it
+          # is needed, not just the last commit.
+          fetch-depth: 0
+
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          # Released binaries are built with the current Go, while the Checks
+          # workflow keeps proving that the version declared in go.mod still
+          # compiles. GoReleaser runs the tests again before publishing.
+          go-version: stable
+
+      - name: Build and publish
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          version: "~> v2"
+          args: release --clean
+        env:
+          # Given by GitHub Actions itself. No personal token is created,
+          # stored, or handed to anyone.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

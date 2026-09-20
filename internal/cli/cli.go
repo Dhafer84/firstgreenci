@@ -24,8 +24,13 @@ import (
 	"github.com/Dhafer84/firstgreenci/internal/i18n"
 )
 
-// Version of the tool, shown by the version command.
-const Version = "0.1.0"
+// Version is the version of the tool, shown by the version command.
+//
+// A binary built by hand reports "dev". The release machinery replaces this
+// at link time with the tag being published, so that the number a user sees
+// is the one that was actually released. A version written into the source
+// would drift from the tag the first time someone forgot to bump it.
+var Version = "dev"
 
 // Exit codes. 2 is reserved for a misuse of the command line, so that a
 // script can tell a wrong invocation from a failed run.

@@ -33,19 +33,50 @@ Une cause et une action. Jamais un mur de logs.
 
 - **Docker**, démarré. `firstgreenci doctor` vérifie et explique quoi faire.
 - **act**, qui exécute les workflows GitHub Actions en local : `brew install act`.
-- **Go 1.23** ou plus récent, tant qu'il n'y a pas d'exécutable téléchargeable.
+
+Rien d'autre. L'exécutable ne dépend d'aucune bibliothèque système, et Go n'est pas nécessaire pour l'utiliser.
 
 ### Installation
+
+Prenez le fichier qui correspond à votre machine sur la [page des versions](https://github.com/Dhafer84/firstgreenci/releases/latest) :
+
+| Votre machine | Fichier à prendre |
+| --- | --- |
+| Mac Apple Silicon (M1 et suivants) | `..._macOS_AppleSilicon.tar.gz` |
+| Mac Intel | `..._macOS_Intel.tar.gz` |
+| Windows | `..._Windows_x86-64.zip` |
+| Linux | `..._Linux_x86-64.tar.gz` |
+
+**macOS et Linux.** Téléchargez avec `curl` plutôt qu'avec le navigateur, en remplaçant le numéro de version et le nom du fichier par les vôtres :
+
+```bash
+curl -L -o firstgreenci.tar.gz https://github.com/Dhafer84/firstgreenci/releases/download/v0.1.0/firstgreenci_0.1.0_macOS_AppleSilicon.tar.gz
+tar -xzf firstgreenci.tar.gz
+sudo mv firstgreenci /usr/local/bin/
+firstgreenci doctor
+```
+
+Pourquoi `curl` ? Parce qu'un fichier téléchargé par le navigateur est mis en quarantaine par macOS et refuse de se lancer. Si cela vous arrive :
+
+```bash
+xattr -d com.apple.quarantine firstgreenci
+```
+
+**Windows.** Décompressez le `.zip`, puis placez `firstgreenci.exe` dans un dossier de votre `PATH`. SmartScreen peut avertir à la première exécution : les exécutables ne sont pas signés, faute de certificat.
+
+**Vérifier ce que vous avez téléchargé.** Chaque version est accompagnée d'un `checksums.txt` :
+
+```bash
+shasum -a 256 -c checksums.txt --ignore-missing
+```
+
+**Autres façons d'installer**, si Go 1.23 ou plus récent est présent :
 
 ```bash
 go install github.com/Dhafer84/firstgreenci/cmd/firstgreenci@latest
 ```
 
-Ou, depuis une copie du dépôt :
-
-```bash
-go build -o firstgreenci ./cmd/firstgreenci
-```
+Ou, depuis une copie du dépôt : `go build -o firstgreenci ./cmd/firstgreenci`
 
 ### Commandes
 
@@ -152,9 +183,44 @@ A cause and an action. Never a wall of logs.
 
 - **Docker**, started. `firstgreenci doctor` checks it and explains what to do.
 - **act**, which runs GitHub Actions workflows locally: `brew install act`.
-- **Go 1.23** or newer, until downloadable binaries exist.
+
+Nothing else. The executable depends on no system library, and Go is not needed to use it.
 
 ### Install
+
+Take the file matching your machine from the [releases page](https://github.com/Dhafer84/firstgreenci/releases/latest):
+
+| Your machine | File to take |
+| --- | --- |
+| Mac with Apple Silicon (M1 and later) | `..._macOS_AppleSilicon.tar.gz` |
+| Mac with Intel | `..._macOS_Intel.tar.gz` |
+| Windows | `..._Windows_x86-64.zip` |
+| Linux | `..._Linux_x86-64.tar.gz` |
+
+**macOS and Linux.** Download with `curl` rather than the browser, replacing the version number and file name with yours:
+
+```bash
+curl -L -o firstgreenci.tar.gz https://github.com/Dhafer84/firstgreenci/releases/download/v0.1.0/firstgreenci_0.1.0_macOS_AppleSilicon.tar.gz
+tar -xzf firstgreenci.tar.gz
+sudo mv firstgreenci /usr/local/bin/
+firstgreenci doctor
+```
+
+Why `curl`? Because a browser-downloaded file is quarantined by macOS and refuses to run. If that happens:
+
+```bash
+xattr -d com.apple.quarantine firstgreenci
+```
+
+**Windows.** Unzip, then put `firstgreenci.exe` in a folder on your `PATH`. SmartScreen may warn on first run: the executables are not signed, for want of a certificate.
+
+**Check what you downloaded.** Every release ships a `checksums.txt`:
+
+```bash
+shasum -a 256 -c checksums.txt --ignore-missing
+```
+
+**Other ways to install**, if Go 1.23 or newer is present:
 
 ```bash
 go install github.com/Dhafer84/firstgreenci/cmd/firstgreenci@latest
