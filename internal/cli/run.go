@@ -53,6 +53,11 @@ func runPipeline(env Environment, args []string) int {
 		return exitFailure
 	}
 
+	// The false green appears here, so the caveat belongs here too.
+	if location, _ := generate.Where(root); location == generate.InsideRepository {
+		printBlock(env, markWarning, catalog.T("run.location.not_root"))
+	}
+
 	tools, code := prepareTools(env, catalog)
 	if tools == nil {
 		return code

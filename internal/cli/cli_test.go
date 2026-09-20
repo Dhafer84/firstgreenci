@@ -406,3 +406,66 @@ func TestTopLevelCommands(t *testing.T) {
 		})
 	}
 }
+
+// TestInitRefusesOutsideTheRepositoryRoot covers the worst defect found so
+// far: a workflow written below the root runs green locally and is ignored
+// by GitHub, silently. The tool must refuse, as it refuses to overwrite.
+func TestInitRefusesOutsideTheRepositoryRoot(t *testing.T) {
+	repository := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(repository, ".git"), 0o755); err != nil {
+		t.Fatalf("build the repository: %v", err)
+	}
+
+	backend := filepath.Join(repository, "backend")
+	if err := os.MkdirAll(backend, 0o755); err != nil {
+		t.Fatalf("build the subfolder: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(backend, "package.json"),
+		[]byte(`{"name":"backend","scripts":{"test":"node --test"}}`), 0o644); err != nil {
+		t.Fatalf("write the manifest: %v", err)
+	}
+
+	got := run(t, "", false, "init", "--lang", "fr", backend)
+
+	if got.code != 1 {
+		t.Errorf("exit code = %d, want 1", got.code)
+	}
+	if !strings.Contains(got.stdout, "racine de votre dépôt") {
+		t.Errorf("the reason was not given:\n%s", got.stdout)
+	}
+	if !strings.Contains(got.stdout, "--force") {
+		t.Errorf("the way through was not given:\n%s", got.stdout)
+	}
+	if _, err := os.Stat(workflowPath(backend)); !os.IsNotExist(err) {
+		t.Error("a workflow was written where GitHub would never read it")
+	}
+
+	// --force is the deliberate way through, and it must work.
+	forced := run(t, "", false, "init", "--lang", "fr", "--force", backend)
+	if forced.code != 0 {
+		t.Fatalf("with --force: exit code = %d, want 0\n%s", forced.code, forced.stderr)
+	}
+	if _, err := os.Stat(workflowPath(backend)); err != nil {
+		t.Errorf("--force did not write the workflow: %v", err)
+	}
+}
+
+// TestInitAtTheRepositoryRootIsSilent is the symmetric check: the ordinary
+// case must not gain a warning.
+func TestInitAtTheRepositoryRootIsSilent(t *testing.T) {
+	root := sampleProject(t, "python-pip-pytest")
+	if err := os.MkdirAll(filepath.Join(root, ".git"), 0o755); err != nil {
+		t.Fatalf("build the repository: %v", err)
+	}
+
+	got := run(t, "", false, "init", "--lang", "fr", root)
+
+	if got.code != 0 {
+		t.Fatalf("exit code = %d, want 0\n%s", got.code, got.stderr)
+	}
+	for _, unwanted := range []string{"racine de votre dépôt", "n'est pas un dépôt git"} {
+		if strings.Contains(got.stdout, unwanted) {
+			t.Errorf("an ordinary project was warned about %q:\n%s", unwanted, got.stdout)
+		}
+	}
+}

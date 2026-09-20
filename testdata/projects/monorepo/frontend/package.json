@@ -1,0 +1,4 @@
+{
+  "name": "frontend",
+  "scripts": { "test": "vitest run" }
+}

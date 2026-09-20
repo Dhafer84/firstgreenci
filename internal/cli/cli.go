@@ -227,6 +227,10 @@ func runInit(env Environment, args []string) int {
 		return exitSuccess
 	}
 
+	if !checkLocation(env, catalog, root, *force) {
+		return exitFailure
+	}
+
 	written, code := writeWorkflow(env, catalog, root, content, *force)
 	if written == "" {
 		return code
@@ -240,6 +244,51 @@ func runInit(env Environment, args []string) int {
 	fmt.Fprintln(env.Stdout, catalog.T("init.next", written))
 
 	return exitSuccess
+}
+
+// checkLocation reports whether the workflow may be written where it was
+// asked for, and says why when it may not.
+//
+// A workflow written anywhere but the root of the repository runs locally and
+// is ignored by GitHub. That is worse than a red pipeline: a red pipeline
+// explains itself, silence does not. So the tool refuses, as it refuses to
+// overwrite a file, and names the command that would work.
+//
+// A folder belonging to no repository is treated differently on purpose:
+// there is no right command to point at, only a different action — create a
+// repository — and refusing would block without protecting anything.
+func checkLocation(env Environment, catalog *i18n.Catalog, root string, force bool) bool {
+	switch location, repository := generate.Where(root); location {
+	case generate.InsideRepository:
+		if force {
+			return true
+		}
+		printBlock(env, markWarning, catalog.T("init.location.not_root", displayPath(root), repository))
+		return false
+
+	case generate.OutsideRepository:
+		printBlock(env, markWarning, catalog.T("init.location.no_repository"))
+		return true
+
+	default:
+		return true
+	}
+}
+
+// printBlock shows a multi-line message under a mark, the first line beside
+// it and the rest aligned below.
+func printBlock(env Environment, mark, message string) {
+	fmt.Fprintln(env.Stdout)
+	for i, line := range strings.Split(message, "\n") {
+		switch {
+		case i == 0:
+			fmt.Fprintf(env.Stdout, "%s  %s\n", mark, line)
+		case line == "":
+			fmt.Fprintln(env.Stdout)
+		default:
+			fmt.Fprintf(env.Stdout, "   %s\n", line)
+		}
+	}
 }
 
 // detectProject runs the detection and turns its failures into explanations.
@@ -293,6 +342,18 @@ func reportDetectionError(env Environment, catalog *i18n.Catalog, root string, e
 	switch {
 	case errors.As(err, &notRecognised):
 		fmt.Fprintln(env.Stderr, catalog.T("detect.error.none", displayPath(root)))
+
+		// Naming the folders that do look like projects is the difference
+		// between a dead end and a next step, for anyone whose code sits in
+		// backend/ and frontend/.
+		if len(notRecognised.Candidates) > 0 {
+			fmt.Fprintln(env.Stderr)
+			fmt.Fprintln(env.Stderr, catalog.T("detect.error.none.subprojects"))
+			for _, candidate := range notRecognised.Candidates {
+				fmt.Fprintf(env.Stderr, "  firstgreenci init %s\n", candidate)
+			}
+			break
+		}
 		fmt.Fprintln(env.Stderr, catalog.T("detect.error.none.hint"))
 
 	case errors.As(err, &missingTest):
@@ -416,17 +477,7 @@ func printEvidence(env Environment, catalog *i18n.Catalog, project *detect.Proje
 // for; letting them find out after a three-minute run is not.
 func printWarnings(env Environment, catalog *i18n.Catalog, project *detect.Project) {
 	for _, warning := range explain.Warnings(catalog, project) {
-		fmt.Fprintln(env.Stdout)
-		for i, line := range strings.Split(warning, "\n") {
-			switch {
-			case i == 0:
-				fmt.Fprintf(env.Stdout, "%s  %s\n", markWarning, line)
-			case line == "":
-				fmt.Fprintln(env.Stdout)
-			default:
-				fmt.Fprintf(env.Stdout, "   %s\n", line)
-			}
-		}
+		printBlock(env, markWarning, warning)
 	}
 }
 

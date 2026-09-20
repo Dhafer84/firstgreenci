@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -76,6 +77,11 @@ type Project struct {
 // NotRecognisedError reports that no supported project was found.
 type NotRecognisedError struct {
 	Root string
+	// Candidates are the folders one level down that do look like projects.
+	// Answering "I found nothing, look elsewhere" without saying where is a
+	// dead end for anyone whose code sits in backend/ and frontend/ — the
+	// most common shape there is after a single-folder project.
+	Candidates []string
 }
 
 func (e *NotRecognisedError) Error() string {
@@ -122,7 +128,7 @@ func Detect(root string) (*Project, error) {
 
 	switch len(candidates) {
 	case 0:
-		return nil, &NotRecognisedError{Root: root}
+		return nil, &NotRecognisedError{Root: root, Candidates: SubProjects(root)}
 	case 1:
 		return DetectAs(root, candidates[0])
 	default:
@@ -172,6 +178,45 @@ func candidates(root string) []Language {
 		found = append(found, JavaScript)
 	}
 
+	return found
+}
+
+// ignoredFolders never hold a project of their own, and looking into them
+// would answer with noise: node_modules alone holds thousands of
+// package.json files.
+var ignoredFolders = map[string]bool{
+	"node_modules": true,
+	"venv":         true,
+	"vendor":       true,
+	"build":        true,
+	"dist":         true,
+	"target":       true,
+	"__pycache__":  true,
+}
+
+// SubProjects lists the folders one level below root that look like a
+// project, sorted so that the advice is always given in the same order.
+//
+// It goes one level down and no further: deeper means guessing, and a wrong
+// guess sends a beginner into a folder that holds nothing of theirs.
+func SubProjects(root string) []string {
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		return nil
+	}
+
+	var found []string
+	for _, entry := range entries {
+		name := entry.Name()
+		if !entry.IsDir() || ignoredFolders[name] || strings.HasPrefix(name, ".") {
+			continue
+		}
+		if len(candidates(filepath.Join(root, name))) > 0 {
+			found = append(found, name)
+		}
+	}
+
+	sort.Strings(found)
 	return found
 }
 

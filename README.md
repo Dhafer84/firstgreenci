@@ -146,6 +146,20 @@ La réponse est retenue dans un petit fichier JSON, dans le dossier de configura
 
 La version du langage est lue dans `.python-version`, `requires-python`, `.nvmrc` ou `engines.node`. À défaut, Python 3.12 et Node.js 20.
 
+### Projets à plusieurs dossiers
+
+GitHub ne lit les workflows que dans `.github/workflows/` **à la racine du dépôt**. Un fichier placé ailleurs s'exécute très bien sur votre machine et n'est jamais déclenché par GitHub.
+
+L'outil vérifie donc où il écrit. Si vous le lancez dans un sous-dossier d'un dépôt, il **refuse** et vous donne la commande à lancer depuis la racine ; `--force` passe outre. Et si la racine ne contient aucun projet reconnaissable, il nomme les sous-dossiers qui en contiennent un :
+
+```
+Je n'ai pas reconnu de projet Python ou JavaScript dans …
+
+J'ai trouvé ceci juste en dessous :
+  firstgreenci init backend
+  firstgreenci init frontend
+```
+
 ### Il vous prévient avant de vous faire attendre
 
 Si vos tests ne pourront pas être collectés par l'outil détecté, `init` le dit **immédiatement**, chiffres à l'appui, au lieu de vous laisser découvrir un pipeline rouge après plusieurs minutes d'exécution :
@@ -321,6 +335,20 @@ Options for `run`: `--lang fr|en`, `--verbose`, `--image <reference>`.
 ### On the first run
 
 `run` asks once which container image to run your pipeline in: faithful to GitHub (~1.2 GB, Python and Node preinstalled) or light (~200 MB, no Python). The answer is remembered in a small JSON file in your system's configuration folder. `--image` overrides it for one run. No secret is ever written there.
+
+### Projects made of several folders
+
+GitHub only reads workflows from `.github/workflows/` **at the root of the repository**. A file placed anywhere else runs perfectly well on your machine and is never triggered by GitHub.
+
+So the tool checks where it writes. Run it in a subfolder of a repository and it **refuses**, giving you the command to run from the root; `--force` goes through anyway. And when the root holds no recognisable project, it names the subfolders that do:
+
+```
+I did not recognise a Python or JavaScript project in …
+
+I found these just below:
+  firstgreenci init backend
+  firstgreenci init frontend
+```
 
 ### It warns you before making you wait
 

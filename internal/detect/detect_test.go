@@ -382,3 +382,36 @@ func TestWarningCountsDeclarationsNotMentions(t *testing.T) {
 		t.Errorf("warning key = %q, want %q", key, "detect.warning.no_test_tool")
 	}
 }
+
+// TestSubProjectsAreNamed covers the dead end met on two real monorepos:
+// nothing at the root, and no hint about the folders that do hold a project.
+func TestSubProjectsAreNamed(t *testing.T) {
+	_, err := detect.Detect(projectPath("monorepo"))
+
+	var notRecognised *detect.NotRecognisedError
+	if !errors.As(err, &notRecognised) {
+		t.Fatalf("got %T, want *detect.NotRecognisedError", err)
+	}
+
+	want := []string{"backend", "frontend"}
+	if len(notRecognised.Candidates) != len(want) {
+		t.Fatalf("Candidates = %v, want %v — node_modules and docs must be left out", notRecognised.Candidates, want)
+	}
+	for i := range want {
+		if notRecognised.Candidates[i] != want[i] {
+			t.Errorf("Candidates[%d] = %q, want %q", i, notRecognised.Candidates[i], want[i])
+		}
+	}
+}
+
+// TestSubProjectsIgnoreNoise checks that the folders which hold thousands of
+// manifests of their own are never offered as a project.
+func TestSubProjectsIgnoreNoise(t *testing.T) {
+	for _, unwanted := range []string{"node_modules", "docs"} {
+		for _, candidate := range detect.SubProjects(projectPath("monorepo")) {
+			if candidate == unwanted {
+				t.Errorf("%q was offered as a project", unwanted)
+			}
+		}
+	}
+}
